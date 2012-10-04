@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<servers>
+  <server hostname="localhost" id="J2EE Preview at localhost" name="J2EE Preview at localhost" runtime-id="J2EE Preview" server-type="org.eclipse.jst.server.preview.server" server-type-id="org.eclipse.jst.server.preview.server" start-timeout="240" stop-timeout="240" timestamp="3">
+    <list key="modules" value0="Associator::org.eclipse.jst.jee.server:Associator::jst.web::2.5" value1="CodeServer::org.eclipse.jst.jee.server:CodeServer::jst.web::2.5" value2="FileServer::org.eclipse.jst.jee.server:FileServer::jst.web::2.5"/>
+  </server>
+</servers>

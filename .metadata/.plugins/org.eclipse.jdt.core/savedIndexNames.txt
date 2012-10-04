@@ -1,0 +1,13 @@
+INDEX VERSION 1.126+/Users/Cedric/Documents/Québec/Cours/GTI785/LAB/Projet GTI785/Projet/.metadata/.plugins/org.eclipse.jdt.core
+3668447200.index
+2767434832.index
+3919086667.index
+777450865.index
+3745965456.index
+2337015545.index
+1976758678.index
+552926245.index
+265989206.index
+2941136176.index
+1488631992.index
+1720666983.index

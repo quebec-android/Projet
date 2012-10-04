@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<server port="8080">
+  <module context="Associator" name="Associator" path="/Users/Cedric/Documents/Québec/Cours/GTI785/LAB/Projet GTI785/Projet/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/Associator" type="j2ee"/>
+  <module context="CodeServer" name="CodeServer" path="/Users/Cedric/Documents/Québec/Cours/GTI785/LAB/Projet GTI785/Projet/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/CodeServer" type="j2ee"/>
+  <module context="FileServer" name="FileServer" path="/Users/Cedric/Documents/Québec/Cours/GTI785/LAB/Projet GTI785/Projet/.metadata/.plugins/org.eclipse.wst.server.core/tmp0/FileServer" type="j2ee"/>
+</server>
