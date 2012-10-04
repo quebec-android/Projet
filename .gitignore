@@ -8,3 +8,27 @@
 *.ear
 
 *.dat
+
+.metadata/.plugins/org.eclipse.jdt.core/savedIndexNames.txt
+
+.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources
+
+.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources
+
+.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.ui.browser.prefs
+
+.metadata/.plugins/org.eclipse.debug.ui/launchConfigurationHistory.xml
+
+.metadata/.plugins/org.eclipse.epp.usagedata.recording/usagedata.csv
+
+.metadata/.plugins/org.eclipse.jdt.core/externalLibsTimeStamps
+
+.metadata/.plugins/org.eclipse.jdt.core/savedIndexNames.txt
+
+*.dat
+
+.metadata/.plugins/org.eclipse.jdt.core/variablesAndContainers.dat
+
+.metadata/.plugins/org.eclipse.wst.jsdt.core/indexes/savedIndexNames.txt
+
+.metadata/.plugins/org.eclipse.wst.server.core/publish/publish0.dat
