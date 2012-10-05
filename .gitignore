@@ -32,3 +32,15 @@
 .metadata/.plugins/org.eclipse.wst.jsdt.core/indexes/savedIndexNames.txt
 
 .metadata/.plugins/org.eclipse.wst.server.core/publish/publish0.dat
+
+.metadata/.plugins/org.eclipse.jdt.core/nonChainingJarsCache
+
+.metadata/.plugins/org.eclipse.jdt.core/nonChainingJarsCache
+
+*.xml
+
+*.xml
+
+.metadata/.plugins/org.eclipse.ui.workbench/workbench.xml
+
+*.xml
