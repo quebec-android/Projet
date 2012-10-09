@@ -27,4 +27,29 @@ public class FileFolderListener implements FolderListener {
 	public List<File> getFiles(){
 		return files;
 	}
+	
+	public File getFile(String getFileName){
+		File getFile = new File("testFolder4/"+getFileName);
+		
+		if( files.contains(getFile)){
+			getFile = files.get(files.indexOf(getFile));
+			return getFile;
+		}
+		
+		return null;
+	}
+	
+	public boolean copyfile(File newFile){
+		try{
+			if( newFile.createNewFile()){
+				return true;
+			}
+			
+			return false;
+		}
+		catch(Exception e){
+			return false;
+		}
+	}
+	
 }

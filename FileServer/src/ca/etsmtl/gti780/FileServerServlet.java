@@ -40,8 +40,7 @@ public class FileServerServlet extends HttpServlet {
  // Configuration de XStream
     static {
 		xstream.setMode(XStream.NO_REFERENCES);
-		xstream.alias("File", Host.class);
-		xstream.alias("ActiveHosts", List.class);
+		xstream.alias("File", File.class);
 	}
     
     /**
@@ -93,6 +92,33 @@ public class FileServerServlet extends HttpServlet {
 		if( action != null && action.equals("getFile")){
 			List<File> files = _folderListener.getFiles();
 				response.getWriter().write(xstream.toXML(files));
+		}
+		
+		/**Copy file
+		 * Envoi une requête GET au serveur source pour obtenir le fichier à copier
+		 */
+		if( action != null && action.equals("copyFile") ){
+			String IP = request.getParameter("IPsource");
+			String file = request.getParameter("file");
+			
+			this.sendGetRequest(IP,"action=getFile&file="+file);
+			BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			String line = rd.readLine();
+			File newFile = (File) xstream.fromXML(line);
+			_folderListener.copyfile(newFile);
+		}
+		
+		/**Get file
+		 * Renvoi le xml du fichier demandé
+		 */
+		if( action != null && action.equals("GetFile")){
+			String getFileName = request.getParameter("file");
+			File getFile = _folderListener.getFile(getFileName);
+			
+			if( getFile != null ){
+				response.getWriter().write(xstream.toXML(getFile));
+			}
+			
 		}
 	}
 
