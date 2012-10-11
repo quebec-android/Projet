@@ -29,7 +29,7 @@ public class FileFolderListener implements FolderListener {
 	}
 	
 	public File getFile(String getFileName){
-		File getFile = new File("testFolder4/"+getFileName);
+		File getFile = new File(_folder.toString()+"/"+getFileName);
 		
 		if( files.contains(getFile)){
 			getFile = files.get(files.indexOf(getFile));
@@ -41,7 +41,8 @@ public class FileFolderListener implements FolderListener {
 	
 	public boolean copyfile(File newFile){
 		try{
-			if( newFile.createNewFile()){
+			File file = new File(_folder.toString()+"/"+newFile.toString());
+			if( file.createNewFile()){
 				return true;
 			}
 			
