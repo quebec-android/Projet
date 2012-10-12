@@ -29,8 +29,7 @@ public class CodeServerServlet extends HttpServlet {
     
     private static final List<Host> hosts = new ArrayList<Host>();
 
-	private static final XStream xstream = new XStream(
-			new JettisonMappedXmlDriver());
+	private static final XStream xstream = new XStream(new JettisonMappedXmlDriver());
 
 	// Configuration de XStream
 	static {
@@ -41,16 +40,6 @@ public class CodeServerServlet extends HttpServlet {
 		xstream.alias("Files", List.class);
 	}
 	
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public CodeServerServlet() {
-        super();
-        // TODO Auto-generated constructor stub
-        //
-  
-    }
-
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -59,11 +48,6 @@ public class CodeServerServlet extends HttpServlet {
 		
 		if (strImg != null && !strImg.isEmpty()) {
 			
-			//response.setContentType("text/xml");
-		    //PrintWriter out = response.getWriter();
-		    //out.println("<?xml version=\"1.0\"?>");
-			
-			//utilise helloMidlet je pense pour la remettre bien
 			String code = strImg;
 			String IP = null;
 			
@@ -114,34 +98,21 @@ public class CodeServerServlet extends HttpServlet {
 			        
 			        response.getWriter().write(answer);
 				}
-				
-				//response.getWriter().write("<data><ip>"+IP+"</ip></data>");
 			}
 		}
-		
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-	}
-	
 	public boolean sendGetRequest(String url, String parametre){
 		try{
 			URL u = new URL(url+"?"+parametre);
 			connection = (HttpURLConnection) u.openConnection();
 			connection.setRequestMethod("GET");
-			
 			connection.connect();
-			
 			return true;
 		}
 		catch(Exception e){
 			return false;
 		}
-		
 	}
 	
 	public String checkHostList(String code){

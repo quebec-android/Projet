@@ -1,6 +1,7 @@
 package ca.etsmtl.gti780;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,15 +39,21 @@ public class FileFolderListener implements FolderListener {
 		
 		return null;
 	}
-	
-	public boolean copyfile(File newFile){
+	/**
+	 * Créer un nouveau fichier ou écrase l'ancien et ajoute le contenu dans celui-ci
+	 * @param newFile
+	 * @param content
+	 * @return
+	 * 
+	 * TODO
+	 * enlever le "__" qui permet de ne pas écraser le fichier existant sur le localhost
+	 */
+	public boolean copyfile(String newFile, String content){
 		try{
-			File file = new File(_folder.toString()+"/"+newFile.toString());
-			if( file.createNewFile()){
-				return true;
-			}
-			
-			return false;
+			FileWriter fw = new FileWriter(_folder.toString()+"/__"+newFile);
+			fw.write(content);
+			fw.close();
+			return true;
 		}
 		catch(Exception e){
 			return false;

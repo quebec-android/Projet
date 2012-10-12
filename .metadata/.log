@@ -77,3 +77,6 @@ java.net.SocketException: Host is down
 	at org.eclipse.core.internal.resources.Workspace.run(Workspace.java:2353)
 	at org.eclipse.ui.actions.WorkspaceModifyOperation.run(WorkspaceModifyOperation.java:118)
 	at org.eclipse.jface.operation.ModalContext$ModalContextThread.run(ModalContext.java:121)
+
+!ENTRY org.eclipse.jst.server.core 4 0 2012-10-11 19:58:19.197
+!MESSAGE Could not launch in profiling mode because no profilers are configured.

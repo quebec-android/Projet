@@ -1,6 +1,7 @@
 package ca.etsmtl.gti780.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,10 +44,14 @@ public class FileFolderListenerTest {
 		assertTrue(getFile.isFile());
 	}
 	
+	/**
+	 * TODO a modifier
+	 * @throws Exception
+	 */
 	public void testCopyFile() throws Exception{
 		File newFile = new File("newFile");
 		
-		assertTrue(ffl.copyfile(newFile));
+		assertTrue(ffl.copyFile(newFile));
 		
 		File testFile = ffl.getFile("newFile");
 		assertTrue(testFile.isFile());

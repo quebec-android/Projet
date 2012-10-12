@@ -1,15 +1,12 @@
 package ca.etsmtl.gti780;
 
-import ca.etsmtl.gti780.Host;
-import ca.etsmtl.gti780.WatchDog;
-
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -49,13 +46,14 @@ public class FileServerServlet extends HttpServlet {
     public FileServerServlet() {
         super();
         // TODO Auto-generated constructor stub
-        /**Instancié le watchdog et folderlistener
+        /**Instanci≈Ω le watchdog et folderlistener
          * 
          */
         if (!folder.exists()) {
         	try{
 	        	folder.mkdir();
 	        	File addedFile = new File("testFolder4/testFile");
+	        	System.out.println(addedFile.getAbsolutePath());
 	    		addedFile.createNewFile();
         	}
         	catch(Exception e){
@@ -87,7 +85,7 @@ public class FileServerServlet extends HttpServlet {
 		}
 		
 		/**GetFiles
-		 * Retourne les fichiers du dossier surveillé
+		 * Retourne les fichiers du dossier surveill≈Ω
 		 */
 		if( action != null && action.equals("getFile")){
 			List<File> files = _folderListener.getFiles();
@@ -95,53 +93,77 @@ public class FileServerServlet extends HttpServlet {
 		}
 		
 		/**Copy file
-		 * Envoi une requête GET au serveur source pour obtenir le fichier à copier
+		 * Envoi une requÔøΩte GET au serveur source pour obtenir le fichier ÀÜ copier
 		 */
 		if( action != null && action.equals("copyFile") ){
 			String IP = request.getParameter("IPsource");
 			String file = request.getParameter("file");
 			
-			this.sendGetRequest(IP,"action=getFile&file="+file);
+			/**TODO
+			 * Pour le moment, on fait un copier coller sur localhost
+			 * 
+			 * this.sendGetRequest(IP,"action=GetFile&file="+file);
+			 */
+			this.sendGetRequest("http://localhost:8080/FileServer/FileServerServlet","action=GetFile&file="+file);
 			BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			String line = rd.readLine();
-			File newFile = (File) xstream.fromXML(line);
-			_folderListener.copyfile(newFile);
+			line = (String) xstream.fromXML(line);
+			System.out.println(line);
+			
+			_folderListener.copyfile(file,line);
 		}
 		
 		/**Get file
-		 * Renvoi le xml du fichier demandé
+		 * Renvoi le xml du fichier demand≈Ω
 		 */
 		if( action != null && action.equals("GetFile")){
 			String getFileName = request.getParameter("file");
 			File getFile = _folderListener.getFile(getFileName);
 			
 			if( getFile != null ){
-				response.getWriter().write(xstream.toXML(getFile));
+				//response.getWriter().write(xstream.toXML(getFile));
+				String data = copyFile(getFileName);
+				response.getWriter().write(xstream.toXML(data));
 			}
-			
 		}
 	}
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-	}
-	
 	public boolean sendGetRequest(String url, String parametre){
 		try{
 			URL u = new URL(url+"?"+parametre);
 			connection = (HttpURLConnection) u.openConnection();
 			connection.setRequestMethod("GET");
-			
 			connection.connect();
-			
 			return true;
 		}
 		catch(Exception e){
 			return false;
 		}
-		
+	}
+	
+	/**
+	 * Fonction qui copie le contenu du fichier en String
+	 * On rajoute au nom du fichier le nom du dossier surveille par le WatchDog
+	 * @param src
+	 * @return
+	 * @throws IOException
+	 */
+	public String copyFile (String src) throws IOException {
+	    try {
+		      src = folder+"/"+src;
+	    	  String content="",ligne ;
+		      BufferedReader fichier = new BufferedReader(new FileReader(src));
+		      
+		      while ((ligne = fichier.readLine()) != null) {
+		          content+=ligne;
+		          content+="\n";
+		      }
+	
+		      fichier.close();
+		      return content;
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    }  
+		return "ERROR";
 	}
 }
