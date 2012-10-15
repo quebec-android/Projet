@@ -1,6 +1,7 @@
 *.class
 .metadata/*
 .settings/*
+Blackberry/.metadata/*
 
 # Package Files #
 *.jar

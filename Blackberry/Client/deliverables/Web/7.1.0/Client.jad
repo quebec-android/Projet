@@ -1,0 +1,16 @@
+MIDlet-Name: Client
+MIDlet-Version: 1.0.0
+MIDlet-Vendor: BlackBerry Developer
+MIDlet-Jar-URL: Client.jar
+MIDlet-Jar-Size: 13161
+MicroEdition-Profile: MIDP-2.0
+MicroEdition-Configuration: CLDC-1.1
+MIDlet-1: ,img/icon.png,
+RIM-MIDlet-Flags-1: 0
+Manifest-Version: 1.0
+RIM-COD-URL: Client.cod
+RIM-COD-Size: 9220
+RIM-COD-Creation-Time: 1350268227
+RIM-COD-Module-Name: Client
+RIM-COD-Module-Dependencies: net_rim_cldc,net_rim_networkapi
+RIM-COD-SHA1: 10 e5 b1 39 bc bc 7b 8b 51 1f 30 fe 42 87 66 e4 42 1e 0b 50
