@@ -79,9 +79,16 @@ public class FileServerServlet extends HttpServlet {
 		/**GetFiles
 		 * Retourne les fichiers du dossier surveillŽ
 		 */
-		if( action != null && action.equals("getFile")){
+		if( action != null && action.equals("getFiles")){
 			List<File> files = _folderListener.getFiles();
-				response.getWriter().write(xstream.toXML(files));
+			//response.getWriter().write(xstream.toXML(files));
+			String answer = "<?xml version=\"1.0\"?>";
+	        answer += "<data>";
+	        for(File file: files){
+	        	answer += "<file>"+file.toString()+"</file>";
+	        }
+	        answer += "</data>";
+	        response.getWriter().write(answer);
 		}
 		
 		/**Copy file
@@ -103,7 +110,7 @@ public class FileServerServlet extends HttpServlet {
 		/**Get file
 		 * Renvoi le xml du fichier demandŽ
 		 */
-		if( action != null && action.equals("GetFile")){
+		if( action != null && action.equals("getFile")){
 			String getFileName = request.getParameter("file");
 			File getFile = _folderListener.getFile(getFileName);
 			
