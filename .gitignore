@@ -11,3 +11,10 @@ Blackberry/.metadata/*
 *.dat
 
 *.xml
+FileServer/.classpath
+
+CodeServer/.classpath
+
+Blackberry/Client/.classpath
+
+Associator/.classpath
