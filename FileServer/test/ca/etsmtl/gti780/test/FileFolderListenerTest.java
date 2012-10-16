@@ -51,7 +51,7 @@ public class FileFolderListenerTest {
 	public void testCopyFile() throws Exception{
 		File newFile = new File("newFile");
 		
-		assertTrue(ffl.copyFile(newFile));
+		//assertTrue(ffl.copyFile(newFile));
 		
 		File testFile = ffl.getFile("newFile");
 		assertTrue(testFile.isFile());
