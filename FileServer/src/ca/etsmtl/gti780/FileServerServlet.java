@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -40,15 +41,10 @@ public class FileServerServlet extends HttpServlet {
 		xstream.alias("File", File.class);
 	}
     
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public FileServerServlet() {
-        super();
-        // TODO Auto-generated constructor stub
-        /**InstanciŽ le watchdog et folderlistener
-         * 
-         */
+    
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        
         if (!folder.exists()) {
         	try{
 	        	folder.mkdir();
@@ -65,23 +61,19 @@ public class FileServerServlet extends HttpServlet {
         _watchDog = new WatchDog(folder, _folderListener);
         _watchDog.watch();
     }
+    
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		String action = request.getParameter("action");
 		
 		/**Association
 		 * Association avec l'associator et remplissage du tableau de hosts actif.
 		 */
 		if(action != null && action.equals("synchronise") && !associated){
-			this.sendGetRequest(urlAssociator,"host="+urlSelf+"&code=123");
-			response.getWriter().write("Association");
-			BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-	        String line = rd.readLine();
-			associated = true;
+			synchro();
 		}
 		
 		/**GetFiles
@@ -99,11 +91,6 @@ public class FileServerServlet extends HttpServlet {
 			String IP = request.getParameter("IPsource");
 			String file = request.getParameter("file");
 			
-			/**TODO
-			 * Pour le moment, on fait un copier coller sur localhost
-			 * 
-			 * this.sendGetRequest(IP,"action=GetFile&file="+file);
-			 */
 			this.sendGetRequest("http://localhost:8080/FileServer/FileServerServlet","action=GetFile&file="+file);
 			BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			String line = rd.readLine();
@@ -128,6 +115,14 @@ public class FileServerServlet extends HttpServlet {
 		}
 	}
 
+	private void synchro(){
+		this.sendGetRequest(urlAssociator,"host="+urlSelf+"&code=123");
+		//response.getWriter().write("Association");
+//		BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//        String line = rd.readLine();
+		associated = true;
+	}
+	
 	public boolean sendGetRequest(String url, String parametre){
 		try{
 			URL u = new URL(url+"?"+parametre);
