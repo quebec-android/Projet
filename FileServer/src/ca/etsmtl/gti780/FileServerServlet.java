@@ -60,6 +60,10 @@ public class FileServerServlet extends HttpServlet {
         _folderListener = new FileFolderListener(folder);
         _watchDog = new WatchDog(folder, _folderListener);
         _watchDog.watch();
+        
+        if(!associated){
+			synchro();
+		}
     }
     
 
@@ -72,9 +76,9 @@ public class FileServerServlet extends HttpServlet {
 		/**Association
 		 * Association avec l'associator et remplissage du tableau de hosts actif.
 		 */
-		if(action != null && action.equals("synchronise") && !associated){
+		/*if(action != null && action.equals("synchronise") && !associated){
 			synchro();
-		}
+		}*/
 		
 		/**GetFiles
 		 * Retourne les fichiers du dossier surveillŽ
