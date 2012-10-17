@@ -123,11 +123,16 @@ public class FileServerServlet extends HttpServlet {
 	}
 
 	private void synchro(){
-		this.sendGetRequest(urlAssociator,"host="+urlSelf+"&code=123");
-		//response.getWriter().write("Association");
-//		BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//        String line = rd.readLine();
-		associated = true;
+		try{
+			this.sendGetRequest(urlAssociator,"host="+urlSelf+"&code=ETS035796");
+			//response.getWriter().write("Association");
+			BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+	        String line = rd.readLine();
+			associated = true;
+		}
+		catch(Exception e){
+			
+		}
 	}
 	
 	public boolean sendGetRequest(String url, String parametre){
