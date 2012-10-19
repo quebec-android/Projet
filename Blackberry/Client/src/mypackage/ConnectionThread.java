@@ -1,12 +1,8 @@
 package mypackage;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
-import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
-import javax.microedition.io.StreamConnection;
 
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
@@ -17,7 +13,7 @@ import net.rim.device.api.xml.parsers.DocumentBuilder;
 import net.rim.device.api.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
@@ -72,44 +68,29 @@ class ConnectionThread extends Thread
 					{
 						if(iResponseCode==200){
 							try {
-								String response = "";
-
 								Document doc;
 				                DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 				                DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 				                docBuilder.isValidating();
 				                doc = docBuilder.parse(httpConn.openInputStream());
 				                doc.getDocumentElement().normalize();
-				                NodeList list = doc.getElementsByTagName("list");
+				                
+				                NodeList list = doc.getElementsByTagName("File");
+				                String choices[] = new String[list.getLength()];
 				                for (int i=0; i<list.getLength();i++){
-				                	response+=list.item(i).getNodeName();
+					                Element element1 = (Element) list.item(i);
+					                NodeList fstNm = element1.getChildNodes();
+					                choices[i] = (fstNm.item(0)).getNodeValue();
 				                }
-				                screen.getTextField().setText("Here is the response : \n"+response);
-
-
-								
-								
-//								InputStream is = httpConn.openInputStream();
-//								ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
-//								int ch;
-//								while ((ch = is.read()) != -1){
-//									bytestream.write(ch);
-//								}
-//								bytestream.close();
-//								Dialog.alert("Requete ok");
-//
-//								screen.getMyField().setText("Here is the response : \n"+response);
-//								String choices[] = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
-//							    int iSetTo = 2;
-//							    screen.add(new ObjectChoiceField("First Drop-down List",choices,iSetTo));
-								
-								
+				                
+				                int iSetTo = 0;
+				                screen.replace(screen.getFileBouton(), new ObjectChoiceField("Choix du fichier",choices,iSetTo));
+							   
 							} catch (Exception e) {
 								Dialog.alert("exception : "+e.getMessage());
 							}
-
 						} else {
-							screen.getTextField().setText("I'm not workong bitch...");
+							screen.getInfo().setText("I'm not workong bitch...");
 							Dialog.alert("Server is not responding");
 						}
 					}
@@ -117,7 +98,7 @@ class ConnectionThread extends Thread
 			} 
 			catch (IOException e) 
 			{
-				System.err.println("Caught IOException: " + e.getMessage());
+				System.err.println("Caught an IOException: " + e.getMessage());
 			}
 		}
 	}

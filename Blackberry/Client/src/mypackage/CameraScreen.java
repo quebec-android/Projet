@@ -54,14 +54,17 @@ public class CameraScreen extends MainScreen {
 	                byte[] rawImage = control.getSnapshot(null);
 	                
 	                UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());			
-//	    		    
-//	    		    //UiApplication.getUiApplication().pushScreen(new HelloBlackBerryScreen(rawImage));
-	                screen.set_rawImage(rawImage);
+	                if (rawImage == null) {
+	                	 Dialog.alert("Erreur lors de la prise de photo. Veuillez recommencer.");
+	                } else {
+	                	Dialog.alert("Photo OK!");
+	                	screen.set_rawImage(rawImage);
+	                }
 	                UiApplication.getUiApplication().pushScreen(screen);
 	            }
 	            catch(Exception e)
 	            {
-	                Dialog.alert(e.toString());
+	            	Dialog.alert("Erreur lors de la prise de photo. Veuillez recommencer.");
 	            }
 	        }
 	    }           

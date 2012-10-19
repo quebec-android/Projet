@@ -129,9 +129,7 @@ public class CodeServerServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request,
 	 *      HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException {
 		
 		DiskFileItemFactory  fileItemFactory = new DiskFileItemFactory ();
 		ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
@@ -181,8 +179,7 @@ public class CodeServerServlet extends HttpServlet {
 		}
 	}
 	
-	public void processImage (InputStream is, ServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException{
+	public void processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException{
 		BufferedImage image;
 		
 		image = ImageIO.read(is);

@@ -1,86 +1,65 @@
 package mypackage;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import javax.microedition.io.Connector;
+import javax.microedition.io.HttpConnection;
+
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ButtonField;
-import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
 public class HelloBlackBerryScreen extends MainScreen {
 	HelloBlackBerryScreen me;
-	RichTextField textField;
+	RichTextField info;
+	ButtonField sourceBouton;
+	ButtonField fileBouton;
+	ButtonField destBouton;
 	byte[] _rawImage = null;
 	
-	public HelloBlackBerryScreen(byte[] image) {
+	public HelloBlackBerryScreen() {
 	       setTitle("CopierColler");
-	       _rawImage = image;
 	       
 	       me = this;
-	       //if(_rawImage != null ){ //TODO mode dev, a changer
-	    	   textField = new RichTextField("Retreive IP from picture\n\n\n\n\n\n\n");
-			   add(textField);
-	    	   ButtonField monBouton = new ButtonField("get IP");
-	    	   add(monBouton);
-	    	   monBouton.setChangeListener(new FieldChangeListener() {
-	    	       public void fieldChanged(Field field, int context) {
-	    	    	   ConnectionThread ct = new ConnectionThread(me);
-	    	    	   ct.start();
-	    	        }
-	    	   });
-			//} else{
-	    	   RichTextField aSUPPRIMER;
-	    	   
-				aSUPPRIMER = new RichTextField("Select take image source in menu\n");
-			    add(aSUPPRIMER);
-			    ButtonField bSUPPRIMER = new ButtonField("take picture");
-		    	  add(bSUPPRIMER);
-		    	  bSUPPRIMER.setChangeListener(new FieldChangeListener() {
-		    	       public void fieldChanged(Field field, int context) {
-		    	    	   launchCameraScreen();
-		    	        }
-		    	   });
-			   // ButtonField monBouton = new ButtonField("take picture");
-	    	   //add(monBouton);
-//	    	   monBouton.setChangeListener(new FieldChangeListener() {
-//	    	       public void fieldChanged(Field field, int context) {
-//	    	    	   launchCameraScreen();
-//	    	        }
-//	    	   });
-			//}
+	       
+	       sourceBouton = new ButtonField("PC source");
+	       add(sourceBouton);
+	       sourceBouton.setChangeListener(new FieldChangeListener() {
+	    	   public void fieldChanged(Field field, int context) {
+	    		   launchCameraScreen();
+	    	   }
+	       });
+	       
+	       fileBouton = new ButtonField("Choisir les fichiers");
+    	   add(fileBouton);
+    	   fileBouton.setChangeListener(new FieldChangeListener() {
+    	       public void fieldChanged(Field field, int context) {
+    	    	   ConnectionThread ct = new ConnectionThread(me);
+    	    	   ct.start();
+    	        }
+    	   });
+    	   
+	       destBouton = new ButtonField("PC destination");
+	       add(destBouton);
+	       destBouton.setChangeListener(new FieldChangeListener() {
+	    	   public void fieldChanged(Field field, int context) {
+	    		   launchCameraScreen();
+	    	   }
+	       });
+	       
+	       //TODO on pourra le virer après
+	       info = new RichTextField("message : ");
+	       add(info);
     }
-	
-	private MenuItem pictureItem = new MenuItem("Take source picture",20,10){
-		public void run(){
-			launchCameraScreen();
-		}
-	};
-	
-	protected void makeMenu(Menu menu, int instance){
-		if( instance == Menu.INSTANCE_DEFAULT ){
-			String property = System.getProperty("supports.video.capture");
-			if(property != null && property.equals("true")){
-				menu.add(pictureItem);
-			}
-		}
-
-		super.makeMenu(menu, instance);
-	}
 	
 	protected void launchCameraScreen() {
 		CameraScreen screen = new CameraScreen(this);
 	    UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
 		UiApplication.getUiApplication().pushScreen(screen);
-	}
-
-	public RichTextField getTextField() {
-		return textField;
-	}
-
-	public void setTextField(RichTextField textField) {
-		this.textField = textField;
 	}
 
 	public byte[] get_rawImage() {
@@ -89,9 +68,66 @@ public class HelloBlackBerryScreen extends MainScreen {
 
 	public void set_rawImage(byte[] _rawImage) {
 		this._rawImage = _rawImage;
-		String value = new String(_rawImage);
-        textField.setText(value);
-        System.out.println(value);
+		//associate();
+	}
+	
+	public void associate() {
+	    String _url = "http://localhost:8080/CodeServer/CodeServerServlet";
+	    byte[] _data = "".getBytes();
+	    HttpConnection _httpConnection;
+	    OutputStream os;
+	    InputStream is;
+	    try {
+	    	_httpConnection = (HttpConnection)Connector.open(_url);
+            _httpConnection.setRequestMethod(HttpConnection.POST);
+//            _httpConnection.setRequestProperty("User-Agent","Profile/MIDP-2.0 Configuration/CLDC-1.0");
+//            _httpConnection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
+//            _httpConnection.setRequestProperty("Content-Length",new Integer(_rawImage.length).toString());
+            os = _httpConnection.openOutputStream();
+            os.write(_rawImage);
+            
+            int rc = _httpConnection.getResponseCode();
+            if(rc == HttpConnection.HTTP_OK) {
+                  is = _httpConnection.openInputStream();
+                  is.read(_data);
+            } else {
+              _data = null;
+            }
+       } catch(Exception e) {
+       }
+       info.setText(new String(_data));
+	}
+
+	public RichTextField getInfo() {
+		return info;
+	}
+
+	public void setInfo(RichTextField info) {
+		this.info = info;
+	}
+
+	public ButtonField getSourceBouton() {
+		return sourceBouton;
+	}
+
+	public void setSourceBouton(ButtonField sourceBouton) {
+		this.sourceBouton = sourceBouton;
+	}
+
+	public ButtonField getFileBouton() {
+		return fileBouton;
+	}
+
+	public void setFileBouton(ButtonField fileBouton) {
+		this.fileBouton = fileBouton;
+	}
+
+	public ButtonField getDestBouton() {
+		return destBouton;
+	}
+
+	public void setDestBouton(ButtonField destBouton) {
+		this.destBouton = destBouton;
 	}
 	
 	

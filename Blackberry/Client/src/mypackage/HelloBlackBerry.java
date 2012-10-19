@@ -23,6 +23,6 @@ public class HelloBlackBerry extends UiApplication {
      * Creates a new HelloBlackBerry object
      */
     public HelloBlackBerry() {
-        pushScreen( new HelloBlackBerryScreen(null) );
+        pushScreen( new HelloBlackBerryScreen() );
     }
 }
