@@ -4,13 +4,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
+import javax.microedition.io.StreamConnection;
 
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
-import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.component.ObjectChoiceField;
+import net.rim.device.api.xml.parsers.DocumentBuilder;
+import net.rim.device.api.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Grandement inspiré de :
@@ -27,19 +35,30 @@ import net.rim.device.api.ui.component.RichTextField;
  *
  */
 
+/**TODO
+ * 
+ * prenne une photo
+ * pas de sauvegarde
+ * envoyer en POST (payload?)
+ * regarder sujet TP pour prendre des photos
+ * 
+ * @author Fab
+ *
+ */
+
 class ConnectionThread extends Thread
 {
-	RichTextField textField;
-
-	public ConnectionThread(RichTextField textField) {
-		this.textField = textField;
+	HelloBlackBerryScreen screen;
+	
+	public ConnectionThread(HelloBlackBerryScreen screen) {
+		this.screen = screen;
 	}
 
 	public void run()
 	{
 		ConnectionFactory connFact = new ConnectionFactory();
 		ConnectionDescriptor connDesc;
-		connDesc = connFact.getConnection("http://localhost:8080/FileServer/FileServerServlet?action=getFile");
+		connDesc = connFact.getConnection("http://localhost:8080/FileServer/FileServerServlet?action=getFiles");
 		if (connDesc != null)
 		{
 			final HttpConnection httpConn;
@@ -55,23 +74,42 @@ class ConnectionThread extends Thread
 							try {
 								String response = "";
 
-								InputStream is = httpConn.openInputStream();
-								ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
-								int ch;
-								while ((ch = is.read()) != -1){
-									bytestream.write(ch);
-								}
-								response = new String(bytestream.toByteArray());
-								bytestream.close();
-								Dialog.alert("Requete ok");
+								Document doc;
+				                DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+				                DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+				                docBuilder.isValidating();
+				                doc = docBuilder.parse(httpConn.openInputStream());
+				                doc.getDocumentElement().normalize();
+				                NodeList list = doc.getElementsByTagName("list");
+				                for (int i=0; i<list.getLength();i++){
+				                	response+=list.item(i).getNodeName();
+				                }
+				                screen.getTextField().setText("Here is the response : \n"+response);
 
-								textField.setText("Here is the response : \n"+response);
-							} catch (IOException e) {
+
+								
+								
+//								InputStream is = httpConn.openInputStream();
+//								ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
+//								int ch;
+//								while ((ch = is.read()) != -1){
+//									bytestream.write(ch);
+//								}
+//								bytestream.close();
+//								Dialog.alert("Requete ok");
+//
+//								screen.getMyField().setText("Here is the response : \n"+response);
+//								String choices[] = {"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
+//							    int iSetTo = 2;
+//							    screen.add(new ObjectChoiceField("First Drop-down List",choices,iSetTo));
+								
+								
+							} catch (Exception e) {
 								Dialog.alert("exception : "+e.getMessage());
 							}
 
 						} else {
-							textField.setText("I'm not workong bitch...");
+							screen.getTextField().setText("I'm not workong bitch...");
 							Dialog.alert("Server is not responding");
 						}
 					}

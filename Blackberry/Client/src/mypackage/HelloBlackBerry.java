@@ -3,6 +3,8 @@ package mypackage;
 import net.rim.device.api.ui.UiApplication;
 
 /**
+ * Simulateur 9550 v5.0
+ * Connexion Wifi
  * This class extends the UiApplication class, providing a graphical user interface.
  */
 public class HelloBlackBerry extends UiApplication {
@@ -21,6 +23,6 @@ public class HelloBlackBerry extends UiApplication {
      * Creates a new HelloBlackBerry object
      */
     public HelloBlackBerry() {
-        pushScreen( new HelloBlackBerryScreen() );
+        pushScreen( new HelloBlackBerryScreen(null) );
     }
 }

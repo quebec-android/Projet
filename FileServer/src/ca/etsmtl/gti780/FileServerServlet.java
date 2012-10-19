@@ -32,8 +32,7 @@ public class FileServerServlet extends HttpServlet {
     private FileFolderListener _folderListener;
     private File folder = new File("testFolder4");
     
-    private static final XStream xstream = new XStream(
-			new JettisonMappedXmlDriver());
+    private static final XStream xstream = new XStream();
     
  // Configuration de XStream
     static {
@@ -85,14 +84,7 @@ public class FileServerServlet extends HttpServlet {
 		 */
 		if( action != null && action.equals("getFiles")){
 			List<File> files = _folderListener.getFiles();
-			//response.getWriter().write(xstream.toXML(files));
-			String answer = "<?xml version=\"1.0\"?>";
-	        answer += "<data>";
-	        for(File file: files){
-	        	answer += "<file>"+file.toString()+"</file>";
-	        }
-	        answer += "</data>";
-	        response.getWriter().write(answer);
+			response.getWriter().write(xstream.toXML(files));
 		}
 		
 		/**Copy file
