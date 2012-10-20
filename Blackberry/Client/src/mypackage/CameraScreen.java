@@ -1,15 +1,11 @@
 package mypackage;
 
-import java.io.IOException;
-
 import javax.microedition.media.Manager;
-import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
 
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -19,6 +15,8 @@ public class CameraScreen extends MainScreen {
 	HelloBlackBerryScreen screen;
 	
 	public CameraScreen(HelloBlackBerryScreen screen){
+		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
+		UiApplication.getUiApplication().pushScreen(this);
 		this.screen = screen;
         try {
 			Player player = Manager.createPlayer("capture://video?encoding=jpeg");
@@ -31,10 +29,7 @@ public class CameraScreen extends MainScreen {
 			add(cameraView);
 			//rawImage = control.getSnapshot("encoding=jpeg&width=640&height=480&quality=normal");
 			
-        } catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MediaException e) {
+        } catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -55,16 +50,15 @@ public class CameraScreen extends MainScreen {
 	                
 	                UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());			
 	                if (rawImage == null) {
-	                	 Dialog.alert("Erreur lors de la prise de photo. Veuillez recommencer.");
+	                	 screen.myDialAlert("Erreur lors de la prise de photo. Veuillez recommencer.");
 	                } else {
-	                	Dialog.alert("Photo OK!");
 	                	screen.set_rawImage(rawImage);
 	                }
 	                UiApplication.getUiApplication().pushScreen(screen);
 	            }
 	            catch(Exception e)
 	            {
-	            	Dialog.alert("Erreur lors de la prise de photo. Veuillez recommencer.");
+	            	 screen.myDialAlert("Erreur lors de la prise de photo. Veuillez recommencer.");
 	            }
 	        }
 	    }           

@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -22,23 +21,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.Reader;
-import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.output.*;
 
 /**
  * Servlet implementation class CodeServerServlet
@@ -75,8 +72,9 @@ public class CodeServerServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String strImg = request.getParameter("image");
+		System.out.println("doGet "+strImg);
 		
 		if (strImg != null && !strImg.isEmpty()) {
 			
@@ -130,11 +128,10 @@ public class CodeServerServlet extends HttpServlet {
 	 *      HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException {
-		
+		System.out.println("doPost");
 		DiskFileItemFactory  fileItemFactory = new DiskFileItemFactory ();
 		ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
 	    upload.setFileSizeMax(MAX_IMAGE_SIZE);
-	    
 	    
 	    try{
 	    	List<FileItem> fi = (List<FileItem>) upload.parseRequest(request);
@@ -149,37 +146,8 @@ public class CodeServerServlet extends HttpServlet {
 		
 	}
 	
-	public boolean sendGetRequest(String url, String parametre){
-		try{
-			URL u = new URL(url+"?"+parametre);
-			connection = (HttpURLConnection) u.openConnection();
-			connection.setRequestMethod("GET");
-			connection.connect();
-			return true;
-		}
-		catch(Exception e){
-			return false;
-		}
-	}
-	
-	public String checkHostList(String code){
-		for(Host host: hosts){
-			if(host.getCode().equals(code)){
-				return host.getIp();
-			}
-		}
-		return null;
-	}
-	
-	public void addNewHosts( List<Host> activeHosts){
-		for(Host host: activeHosts){
-			if( !hosts.contains(host) ){
-				hosts.add(host);
-			}
-		}
-	}
-	
 	public void processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException{
+		System.out.println("processImage");
 		BufferedImage image;
 		
 		image = ImageIO.read(is);
@@ -244,7 +212,36 @@ public class CodeServerServlet extends HttpServlet {
 				response.getWriter().write("failed"+code);
 			}
 		}
-		
+	}
+	
+	public boolean sendGetRequest(String url, String parametre){
+		try{
+			URL u = new URL(url+"?"+parametre);
+			connection = (HttpURLConnection) u.openConnection();
+			connection.setRequestMethod("GET");
+			connection.connect();
+			return true;
+		}
+		catch(Exception e){
+			return false;
+		}
+	}
+	
+	public String checkHostList(String code){
+		for(Host host: hosts){
+			if(host.getCode().equals(code)){
+				return host.getIp();
+			}
+		}
+		return null;
+	}
+	
+	public void addNewHosts( List<Host> activeHosts){
+		for(Host host: activeHosts){
+			if( !hosts.contains(host) ){
+				hosts.add(host);
+			}
+		}
 	}
 	
 }

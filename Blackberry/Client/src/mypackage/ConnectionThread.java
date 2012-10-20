@@ -1,11 +1,15 @@
 package mypackage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.microedition.io.HttpConnection;
 
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
+import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.ObjectChoiceField;
@@ -45,16 +49,43 @@ import org.w3c.dom.NodeList;
 class ConnectionThread extends Thread
 {
 	HelloBlackBerryScreen screen;
+	byte[] img = null;
+	int choix = 0; //1 --> getFiles && 2 --> copyFile && 3 --> send image
+	String label = null;
 	
-	public ConnectionThread(HelloBlackBerryScreen screen) {
+	public ConnectionThread(HelloBlackBerryScreen screen, int choix) {
 		this.screen = screen;
+		this.choix = choix;
+	}
+	
+	public ConnectionThread(HelloBlackBerryScreen screen, String label) {
+		this.screen = screen;
+		this.label = label;
+		choix = 2;
+	}
+	
+	public ConnectionThread(HelloBlackBerryScreen screen, byte[] img) {
+		this.screen = screen;
+		this.img = img; 
+		choix = 3;
 	}
 
 	public void run()
 	{
+		String url = "";
+		if (choix == 1) {
+			url = "http://localhost:8080/FileServer/FileServerServlet?action=getFiles";
+		} else if (choix == 2) {
+			//récupérer le nom au lieu de l'index...
+			screen.myDialAlert(label);
+			url = "http://localhost:8080/FileServer/FileServerServlet?action=copyFile&IPsource=localhost&file="+label;
+		} else {
+			screen.myDialAlert(new String(img));
+			url = "http://localhost:8080/CodeServer/CodeServerServlet?image="+new String(img);
+		}
 		ConnectionFactory connFact = new ConnectionFactory();
 		ConnectionDescriptor connDesc;
-		connDesc = connFact.getConnection("http://localhost:8080/FileServer/FileServerServlet?action=getFiles");
+		connDesc = connFact.getConnection(url);
 		if (connDesc != null)
 		{
 			final HttpConnection httpConn;
@@ -66,33 +97,47 @@ class ConnectionThread extends Thread
 				{
 					public void run()
 					{
-						if(iResponseCode==200){
+						//if(iResponseCode==200){
 							try {
-								Document doc;
-				                DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-				                DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-				                docBuilder.isValidating();
-				                doc = docBuilder.parse(httpConn.openInputStream());
-				                doc.getDocumentElement().normalize();
-				                
-				                NodeList list = doc.getElementsByTagName("File");
-				                String choices[] = new String[list.getLength()];
-				                for (int i=0; i<list.getLength();i++){
-					                Element element1 = (Element) list.item(i);
-					                NodeList fstNm = element1.getChildNodes();
-					                choices[i] = (fstNm.item(0)).getNodeValue();
-				                }
-				                
-				                int iSetTo = 0;
-				                screen.replace(screen.getFileBouton(), new ObjectChoiceField("Choix du fichier",choices,iSetTo));
+								if (img == null) {
+									Document doc;
+									DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+									DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+									docBuilder.isValidating();
+									doc = docBuilder.parse(httpConn.openInputStream());
+									doc.getDocumentElement().normalize();
+									
+									NodeList list = doc.getElementsByTagName("File");
+									String choices[] = new String[list.getLength()+1];
+									choices[0] = "Choix du fichier";
+									for (int i=0; i<list.getLength();i++){
+										Element element1 = (Element) list.item(i);
+										NodeList fstNm = element1.getChildNodes();
+										choices[i+1] = (fstNm.item(0)).getNodeValue().substring((fstNm.item(0)).getNodeValue().indexOf("\\")+1,(fstNm.item(0)).getNodeValue().length());
+									}
+									screen.createListFile(choices);
+									
+								} else { //affichage simple de la réponse
+									String response = "";
+
+									InputStream is = httpConn.openInputStream();
+									ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
+									int ch;
+									while ((ch = is.read()) != -1){
+										bytestream.write(ch);
+									}
+									response = new String(bytestream.toByteArray());
+									bytestream.close();
+									screen.getInfo().setText("Requete ok : "+response);
+								}
 							   
 							} catch (Exception e) {
-								Dialog.alert("exception : "+e.getMessage());
+								screen.myDialAlert("exception : "+e.getMessage());
 							}
-						} else {
-							screen.getInfo().setText("I'm not workong bitch...");
-							Dialog.alert("Server is not responding");
-						}
+//						} else {
+//							screen.getInfo().setText("I'm not workong bitch...");
+//							screen.myDialAlert("Server is not responding");
+//						}
 					}
 				});
 			} 

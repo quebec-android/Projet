@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 /**
  * Servlet implementation class FileServerServlet
@@ -32,7 +33,7 @@ public class FileServerServlet extends HttpServlet {
     private FileFolderListener _folderListener;
     private File folder = new File("testFolder4");
     
-    private static final XStream xstream = new XStream();
+    private static final XStream xstream = new XStream(new DomDriver());
     
  // Configuration de XStream
     static {
@@ -93,11 +94,11 @@ public class FileServerServlet extends HttpServlet {
 		if( action != null && action.equals("copyFile") ){
 			String IP = request.getParameter("IPsource");
 			String file = request.getParameter("file");
+			System.out.println("copyFile "+IP+" "+file);
 			
-			this.sendGetRequest("http://localhost:8080/FileServer/FileServerServlet","action=GetFile&file="+file);
+			this.sendGetRequest("http://localhost:8080/FileServer/FileServerServlet","action=getFile&file="+file);
 			BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line = rd.readLine();
-			line = (String) xstream.fromXML(line);
+			String line = (String) xstream.fromXML(rd);
 			System.out.println(line);
 			
 			_folderListener.copyfile(file,line);
