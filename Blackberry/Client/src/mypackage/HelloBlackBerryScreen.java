@@ -2,10 +2,10 @@ package mypackage;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
 
-import net.rim.blackberry.api.browser.URLEncodedPostData;
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
 import net.rim.device.api.ui.Field;
@@ -33,6 +33,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 	String ipSource = null;
 	String ipDest = null;
 
+	static final String BOUNDARY = "-----------------V2ymHFg03ehbqqZCaJO6jy";
 
 	public HelloBlackBerryScreen() {
 	       setTitle("CopierColler");
@@ -63,7 +64,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 	 */
 	public boolean onClose()
     {
-       myDialAlert("Thanks for using our app :) ");   
+       Dialog.alert("Thanks for using our app :) ");   
        System.exit(0);
        return true;
     }
@@ -124,10 +125,12 @@ public class HelloBlackBerryScreen extends MainScreen {
 		
 		//essai en POST
 		String url = "http://localhost:8080/CodeServer/CodeServerServlet";
-
-		URLEncodedPostData postData = new URLEncodedPostData(URLEncodedPostData.DEFAULT_CHARSET, false);
+		Hashtable params = new Hashtable();
+		
+		
+		//URLEncodedPostData postData = new URLEncodedPostData(URLEncodedPostData.DEFAULT_CHARSET, false);
 		//passing q’s value and ie’s value
-		postData.append("image",new String(_rawImage));
+		//postData.append("image",new String(_rawImage));
 
 		ConnectionFactory conFactory = new ConnectionFactory();
 		ConnectionDescriptor conDesc = null;
@@ -140,16 +143,20 @@ public class HelloBlackBerryScreen extends MainScreen {
 		// if we can get the connection descriptor from ConnectionFactory
 		if(null != conDesc){
 			try{
+				HttpMultipartRequest req = new HttpMultipartRequest(url,params,"upload_field"
+						,"codebarre.jpg", "image/jpeg", _rawImage);
+				
 				HttpConnection connection = (HttpConnection)conDesc.getConnection();
 				//set the header property
 				connection.setRequestMethod(HttpConnection.POST);
-				connection.setRequestProperty("Content-Length", Integer.toString(postData.size())); //body content of post data
-				connection.setRequestProperty("Connection", "close"); // close the connection after success sending request and receiving response from the server
-				connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // we set the content of this request as application/x-www-form-urlencoded, because the post data is encoded as form-urlencoded(if you print the post data string, it will be like this -> q=remoQte&ie=UTF-8).
+				//connection.setRequestProperty("Content-Length", Integer.toString(postData.size())); //body content of post data
+				connection.setRequestProperty("Connection", "keep-alive"); // close the connection after success sending request and receiving response from the server
+				//connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // we set the content of this request as application/x-www-form-urlencoded, because the post data is encoded as form-urlencoded(if you print the post data string, it will be like this -> q=remoQte&ie=UTF-8).
+				connection.setRequestProperty("Content-Type", "multipart/form-data; boundary="+req.getBoundaryString());
 
 				//now it is time to write the post data into OutputStream
 				OutputStream out = connection.openOutputStream();
-				out.write(postData.getBytes());
+				out.write(req.postBytes);
 				out.flush();
 				out.close();
 
