@@ -97,9 +97,9 @@ class ConnectionThread extends Thread
 				{
 					public void run()
 					{
-						//if(iResponseCode==200){
+						if(iResponseCode==200){
 							try {
-								if (img == null) {
+								if (choix==1) {
 									Document doc;
 									DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 									DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -134,10 +134,10 @@ class ConnectionThread extends Thread
 							} catch (Exception e) {
 								screen.myDialAlert("exception : "+e.getMessage());
 							}
-//						} else {
-//							screen.getInfo().setText("I'm not workong bitch...");
-//							screen.myDialAlert("Server is not responding");
-//						}
+						} else {
+							screen.getInfo().setText("I'm not workong bitch...");
+							screen.myDialAlert("Server is not responding");
+						}
 					}
 				});
 			} 
