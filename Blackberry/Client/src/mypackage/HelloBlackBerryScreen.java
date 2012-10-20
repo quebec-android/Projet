@@ -17,15 +17,23 @@ import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
+/**
+ * MainClass
+ * Contains all the usefull information like IPs...
+ * Allows to manage the differents elements on the screen 
+ *
+ */
 public class HelloBlackBerryScreen extends MainScreen {
 	HelloBlackBerryScreen me;
-	RichTextField info;
 	ButtonField sourceBouton;
-	ButtonField fileBouton;
 	ButtonField destBouton;
 	ObjectChoiceField listFile;
 	byte[] _rawImage = null;
 	
+	String ipSource = null;
+	String ipDest = null;
+
+
 	public HelloBlackBerryScreen() {
 	       setTitle("CopierColler");
 	       
@@ -38,15 +46,6 @@ public class HelloBlackBerryScreen extends MainScreen {
 	    		   launchCameraScreen();
 	    	   }
 	       });
-	       
-	       fileBouton = new ButtonField("Choisir les fichiers");
-    	   add(fileBouton);
-    	   fileBouton.setChangeListener(new FieldChangeListener() {
-    	       public void fieldChanged(Field field, int context) {
-    	    	   ConnectionThread ct = new ConnectionThread(me,1);
-    	    	   ct.start();
-    	        }
-    	   });
     	   
 	       destBouton = new ButtonField("PC destination");
 	       add(destBouton);
@@ -56,11 +55,45 @@ public class HelloBlackBerryScreen extends MainScreen {
 	    	   }
 	       });
 	       
-	       //TODO on pourra le virer après
-	       info = new RichTextField("message : ");
-	       add(info);
     }
 	
+	/**
+	 * Override method
+	 * Display an alert when the app is closing
+	 */
+	public boolean onClose()
+    {
+       myDialAlert("Thanks for using our app :) ");   
+       System.exit(0);
+       return true;
+    }
+	
+	/**
+	 * Display the last message before closing the app
+	 * @param msg
+	 */
+	protected void finish(String msg) {
+		this.deleteAll();
+		RichTextField text = new RichTextField(msg);
+		add(text);
+	}
+	
+	/**
+	 * Delete the buttons when the IP have been found
+	 */
+	protected void updateScreen() {
+		if (ipSource!=null && ipDest!=null) {
+			this.deleteAll();
+			ConnectionThread ct = new ConnectionThread(me,1);
+			ct.start();
+		}
+	}
+	
+	/**
+	 * Create a list with all the available files
+	 * When you choose a file, it sends a get request to copy the file
+	 * @param choices
+	 */
 	protected void createListFile(String[] choices) {
 		int iSetTo = 0;
 		listFile = new ObjectChoiceField("",choices,iSetTo)	{
@@ -73,23 +106,17 @@ public class HelloBlackBerryScreen extends MainScreen {
 	        		}
 	            }
 	    };
-	    this.replace(fileBouton,listFile);
+	    this.add(listFile);
+	    listFile.setPadding(listFile.getPaddingTop(), listFile.getPaddingRight(), listFile.getPaddingBottom(), -170);
 	}
 	
 	protected void launchCameraScreen() {
 		CameraScreen screen = new CameraScreen(this);
 	}
 
-	public byte[] get_rawImage() {
-		return _rawImage;
-	}
-
-	public void set_rawImage(byte[] _rawImage) {
-		this._rawImage = _rawImage;
-		myDialAlert("Photo OK");
-		associate();
-	}
-	
+	/**
+	 * Send a post request to get the IP associated to a picture
+	 */
 	public void associate() {
 		//essai en get
 //		ConnectionThread ct = new ConnectionThread(me,_rawImage);
@@ -136,7 +163,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 						buf.append((char)read);
 					response = buf.toString();
 				}
-				info.setText(response);
+				//info.setText(response);
 				//don’t forget to close the connection
 				connection.close();
 
@@ -147,7 +174,11 @@ public class HelloBlackBerryScreen extends MainScreen {
 		
 	}
 
-	//si on utilise pas ça, on a le runtimeexception
+	/**
+	 * Display alert with messages
+	 * Avoid a runtime exception
+	 * @param msg
+	 */
 	public void myDialAlert(final String msg){
 		try {
     		UiApplication.getUiApplication().invokeLater(new Runnable()
@@ -155,49 +186,117 @@ public class HelloBlackBerryScreen extends MainScreen {
     			public void run() 
     		    {
     			  Dialog.alert(msg);
-    			}			
+    			}	
+    			
     		});
     	} catch (Exception e) {
     	}
 	}
 	
-	public RichTextField getInfo() {
-		return info;
+	/**
+	 * 													GETTERS AND SETTERS
+	 * 
+	 */
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public byte[] get_rawImage() {
+		return _rawImage;
 	}
 
-	public void setInfo(RichTextField info) {
-		this.info = info;
+	/**
+	 * 
+	 * @param _rawImage
+	 */
+	public void set_rawImage(byte[] _rawImage) {
+		this._rawImage = _rawImage;
+		myDialAlert("Photo OK");
+		//TODO simule la bonne association, à supprimer
+		//associate();
+		ipSource= " ";
+		ipDest= " ";
+		updateScreen();
 	}
-
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public ButtonField getSourceBouton() {
 		return sourceBouton;
 	}
 
+	/**
+	 * 
+	 * @param sourceBouton
+	 */
 	public void setSourceBouton(ButtonField sourceBouton) {
 		this.sourceBouton = sourceBouton;
 	}
 
-	public ButtonField getFileBouton() {
-		return fileBouton;
-	}
-
-	public void setFileBouton(ButtonField fileBouton) {
-		this.fileBouton = fileBouton;
-	}
-
+	/**
+	 * 
+	 * @return
+	 */
 	public ButtonField getDestBouton() {
 		return destBouton;
 	}
 
+	/**
+	 * 
+	 * @param destBouton
+	 */
 	public void setDestBouton(ButtonField destBouton) {
 		this.destBouton = destBouton;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public ObjectChoiceField getListFile() {
 		return listFile;
 	}
 
+	/**
+	 * 
+	 * @param listFile
+	 */
 	public void setListFile(ObjectChoiceField listFile) {
 		this.listFile = listFile;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getIpSource() {
+		return ipSource;
+	}
+
+	/**
+	 * 
+	 * @param ipSource
+	 */
+	public void setIpSource(String ipSource) {
+		this.ipSource = ipSource;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getIpDest() {
+		return ipDest;
+	}
+
+	/**
+	 * 
+	 * @param ipDest
+	 */
+	public void setIpDest(String ipDest) {
+		this.ipDest = ipDest;
 	}
 }   

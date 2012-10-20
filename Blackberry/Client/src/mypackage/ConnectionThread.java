@@ -25,27 +25,9 @@ import org.w3c.dom.NodeList;
  * 		http://docs.blackberry.com/en/developers/deliverables/11938/CS_create_first_available_HTTP_connection_857706_11.jsp
  * 		http://minimalbugs.com/questions/how-to-get-http-get-in-blackberry
  * 
- * @author Fab
+ * Class used to send Get Request
  * 
- * Fonctionnement :
- * 		Démarrer un autre eclipse avec les autres projets
- * 		Mettre le serveur en route, faire l'association
- * 		Lancer le client Blackberry, aller dans les paramètres pour activer le wifi et désactiver le réseau normal
- * 		Lancer l'appli, elle ne fonctionne pas du premier coup, je ne sais pas pourquoi... 
- *
  */
-
-/**TODO
- * 
- * prenne une photo
- * pas de sauvegarde
- * envoyer en POST (payload?)
- * regarder sujet TP pour prendre des photos
- * 
- * @author Fab
- *
- */
-
 class ConnectionThread extends Thread
 {
 	HelloBlackBerryScreen screen;
@@ -53,34 +35,49 @@ class ConnectionThread extends Thread
 	int choix = 0; //1 --> getFiles && 2 --> copyFile && 3 --> send image
 	String label = null;
 	
+	/**
+	 * Used to send request to get the list of the available files to copy
+	 * @param screen
+	 * @param choix
+	 */
 	public ConnectionThread(HelloBlackBerryScreen screen, int choix) {
 		this.screen = screen;
 		this.choix = choix;
 	}
 	
+	/**
+	 * Used to send request to copy a file
+	 * @param screen
+	 * @param label
+	 */
 	public ConnectionThread(HelloBlackBerryScreen screen, String label) {
 		this.screen = screen;
 		this.label = label;
 		choix = 2;
 	}
 	
+	/**
+	 * Used to send the request to retrieve the IP associated to a picture
+	 * @param screen
+	 * @param img
+	 */
 	public ConnectionThread(HelloBlackBerryScreen screen, byte[] img) {
 		this.screen = screen;
 		this.img = img; 
 		choix = 3;
 	}
 
+	/**
+	 * 
+	 */
 	public void run()
 	{
 		String url = "";
 		if (choix == 1) {
 			url = "http://localhost:8080/FileServer/FileServerServlet?action=getFiles";
 		} else if (choix == 2) {
-			//récupérer le nom au lieu de l'index...
-			screen.myDialAlert(label);
 			url = "http://localhost:8080/FileServer/FileServerServlet?action=copyFile&IPsource=localhost&file="+label;
 		} else {
-			screen.myDialAlert(new String(img));
 			url = "http://localhost:8080/CodeServer/CodeServerServlet?image="+new String(img);
 		}
 		ConnectionFactory connFact = new ConnectionFactory();
@@ -128,20 +125,25 @@ class ConnectionThread extends Thread
 									}
 									response = new String(bytestream.toByteArray());
 									bytestream.close();
-									screen.getInfo().setText("Requete ok : "+response);
+									if (choix == 2) {
+										screen.finish(response);
+									}
 								}
 							   
 							} catch (Exception e) {
 								screen.myDialAlert("exception : "+e.getMessage());
 							}
 						} else {
-							screen.getInfo().setText("I'm not workong bitch...");
-							screen.myDialAlert("Server is not responding");
+							try {
+								screen.myDialAlert("Server error code "+httpConn.getResponseCode()+" : "+httpConn.getResponseMessage());
+							} catch (Exception e) {
+								screen.myDialAlert("exception : "+e.getMessage());
+							}
 						}
 					}
 				});
 			} 
-			catch (IOException e) 
+			catch (Exception e) 
 			{
 				System.err.println("Caught an IOException: " + e.getMessage());
 			}

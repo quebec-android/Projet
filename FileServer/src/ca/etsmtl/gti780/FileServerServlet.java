@@ -97,11 +97,14 @@ public class FileServerServlet extends HttpServlet {
 			System.out.println("copyFile "+IP+" "+file);
 			
 			this.sendGetRequest("http://localhost:8080/FileServer/FileServerServlet","action=getFile&file="+file);
-			BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line = (String) xstream.fromXML(rd);
-			System.out.println(line);
-			
-			_folderListener.copyfile(file,line);
+			if (connection.getResponseCode() == 200) {
+				BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+				String line = (String) xstream.fromXML(rd);
+				_folderListener.copyfile(file,line);
+				response.getWriter().write("File "+file+" created with success!");
+			} else { //erreur lors de la récupération du contenu du fichier
+				response.sendError(405, connection.getResponseMessage());
+			}
 		}
 		
 		/**Get file
@@ -114,7 +117,11 @@ public class FileServerServlet extends HttpServlet {
 			if( getFile != null ){
 				//response.getWriter().write(xstream.toXML(getFile));
 				String data = copyFile(getFileName);
-				response.getWriter().write(xstream.toXML(data));
+				if (data != null){
+					response.getWriter().write(xstream.toXML(data));
+				} else {
+					response.sendError(405, "File doesn't exist on the server...");
+				}
 			}
 		}
 	}
@@ -152,7 +159,7 @@ public class FileServerServlet extends HttpServlet {
 	 * @return
 	 * @throws IOException
 	 */
-	public String copyFile (String src) throws IOException {
+	public String copyFile (String src) {
 	    try {
 		      src = folder+"/"+src;
 	    	  String content="",ligne ;
@@ -168,6 +175,6 @@ public class FileServerServlet extends HttpServlet {
 	    } catch (Exception e) {
 	    	e.printStackTrace();
 	    }  
-		return "ERROR";
+		return null;
 	}
 }

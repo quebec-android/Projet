@@ -9,11 +9,21 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 
+/**
+ * 
+ * Used to shot the barre code 
+ *
+ */
 public class CameraScreen extends MainScreen {
 	VideoControl control;
 	RichTextField textField;
 	HelloBlackBerryScreen screen;
 	
+	/**
+	 * Push the CameraScreen
+	 * Configure the camera
+	 * @param screen
+	 */
 	public CameraScreen(HelloBlackBerryScreen screen){
 		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
 		UiApplication.getUiApplication().pushScreen(this);
@@ -30,12 +40,14 @@ public class CameraScreen extends MainScreen {
 			//rawImage = control.getSnapshot("encoding=jpeg&width=640&height=480&quality=normal");
 			
         } catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
 	}
 	
+	/**
+	 * Take the picture and save it in a byte array  
+	 */
 	protected boolean invokeAction(int action)
 	{
 	    boolean handled = super.invokeAction(action); 
