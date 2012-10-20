@@ -75,7 +75,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 	        		}
 	            }
 	    };
-	    this.replace(fileBouton,listFile);
+		this.replace(fileBouton,listFile);
 	}
 	
 	protected void launchCameraScreen() {
