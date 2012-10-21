@@ -84,53 +84,8 @@ public class CodeServerServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		String strImg = request.getParameter("image");
-		System.out.println("doGet "+strImg);
+		response.getWriter().write("Code server online");
 		
-		if (strImg != null && !strImg.isEmpty()) {
-			
-			String code = strImg;
-			String IP = null;
-			
-			/**TODO
-			 * utilise api pour avoir le code
-			 */
-			
-			if( (IP = this.checkHostList(code)) != null ){
-				/** TODO
-				 * Envoyer réponse au portable
-				 */
-				
-				// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
-			}
-			else{
-				if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
-					//read the result from the server
-			        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			        String line = rd.readLine();
-			        List<Host> activeHost = (List<Host>) xstream.fromXML(line);
-			        this.addNewHosts(activeHost);
-				}
-				if( (IP = this.checkHostList(code)) != null ){
-					/**TODO
-					 * send request to IP fileServer to get files
-					 */
-					
-					// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
-				}
-				else{
-					response.getWriter().write("IP not found");
-					//out.println("<data><ip>-1</ip></data>");
-				}
-			}
-			
-			if( IP != null ){
-				String answer = "<?xml version=\"1.0\"?>";
-		        answer += "<data><ip>"+IP+"</ip></data>";
-		        
-		        response.getWriter().write(answer);
-			}
-		}
 	}
 	
 	/**
@@ -150,7 +105,52 @@ public class CodeServerServlet extends HttpServlet {
 				IOUtils.copy(is, writer);
 				String theString = writer.toString();
 
-				this.processImage(is, request, response);
+				String code = this.processImage(is, request, response);
+				
+				if ( code != null ) {
+					
+					String IP = null;
+					
+					/**TODO
+					 * utilise api pour avoir le code
+					 */
+					
+					if( (IP = this.checkHostList(code)) != null ){
+						/** TODO
+						 * Envoyer réponse au portable
+						 */
+						
+						// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
+					}
+					else{
+						if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
+							//read the result from the server
+					        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+					        String line = rd.readLine();
+					        List<Host> activeHost = (List<Host>) xstream.fromXML(line);
+					        this.addNewHosts(activeHost);
+						}
+						if( (IP = this.checkHostList(code)) != null ){
+							/**TODO
+							 * send request to IP fileServer to get files
+							 */
+						}
+						else{
+							response.getWriter().write("IP not found");
+							//out.println("<data><ip>-1</ip></data>");
+						}
+					}
+					
+					if( IP != null ){
+						String answer = "<?xml version=\"1.0\"?>";
+				        answer += "<data><ip>"+IP+"</ip></data>";
+				        
+				        response.getWriter().write(answer);
+					}
+					else{
+						response.getWriter().write("failed"+code);
+					}
+				}
 		    }
 	    }
 	    catch(Exception e){
@@ -167,7 +167,7 @@ public class CodeServerServlet extends HttpServlet {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	public void processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException{
+	public String processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException{
 		System.out.println("processImage");
 		BufferedImage image;
 		
@@ -186,52 +186,7 @@ public class CodeServerServlet extends HttpServlet {
 	    	System.out.println("Error");
 	    }
 		
-		if ( code != null ) {
-			
-			String IP = null;
-			
-			/**TODO
-			 * utilise api pour avoir le code
-			 */
-			
-			if( (IP = this.checkHostList(code)) != null ){
-				/** TODO
-				 * Envoyer réponse au portable
-				 */
-				
-				// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
-			}
-			else{
-				if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
-					//read the result from the server
-			        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			        String line = rd.readLine();
-			        List<Host> activeHost = (List<Host>) xstream.fromXML(line);
-			        this.addNewHosts(activeHost);
-				}
-				if( (IP = this.checkHostList(code)) != null ){
-					/**TODO
-					 * send request to IP fileServer to get files
-					 */
-					
-					// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
-				}
-				else{
-					response.getWriter().write("IP not found");
-					//out.println("<data><ip>-1</ip></data>");
-				}
-			}
-			
-			if( IP != null ){
-				String answer = "<?xml version=\"1.0\"?>";
-		        answer += "<data><ip>"+IP+"</ip></data>";
-		        
-		        response.getWriter().write(answer);
-			}
-			else{
-				response.getWriter().write("failed"+code);
-			}
-		}
+		return code;
 	}
 	
 	/**
