@@ -16,16 +16,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import common.Const;
 
 /**
  * Servlet implementation class FileServerServlet
  */
 public class FileServerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private String urlAssociator = "http://localhost:8080/Associator/AssociatorServlet";
-	private String urlSelf = "localhost:8080/FileServer/FileServerServlet";
     private boolean associated = false;
     private HttpURLConnection connection;
     
@@ -35,13 +33,17 @@ public class FileServerServlet extends HttpServlet {
     
     private static final XStream xstream = new XStream(new DomDriver());
     
- // Configuration de XStream
+    /**
+     * Configure XStream
+     */
     static {
 		xstream.setMode(XStream.NO_REFERENCES);
 		xstream.alias("File", File.class);
 	}
     
-    
+    /**
+     * Overriding init method
+     */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
@@ -68,20 +70,13 @@ public class FileServerServlet extends HttpServlet {
     
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * Overriding doGet method
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String action = request.getParameter("action");
 		
-		/**Association
-		 * Association avec l'associator et remplissage du tableau de hosts actif.
-		 */
-		/*if(action != null && action.equals("synchronise") && !associated){
-			synchro();
-		}*/
-		
 		/**GetFiles
-		 * Retourne les fichiers du dossier surveillŽ
+		 * Retourne les fichiers du dossier surveille
 		 */
 		if( action != null && action.equals("getFiles")){
 			List<File> files = _folderListener.getFiles();
@@ -89,49 +84,50 @@ public class FileServerServlet extends HttpServlet {
 		}
 		
 		/**Copy file
-		 * Envoi une requ�te GET au serveur source pour obtenir le fichier ˆ copier
+		 * Envoi une requete GET au serveur source pour obtenir le fichier a copier
 		 */
 		if( action != null && action.equals("copyFile") ){
 			String IP = request.getParameter("IPsource");
 			String file = request.getParameter("file");
 			System.out.println("copyFile "+IP+" "+file);
 			
-			this.sendGetRequest("http://localhost:8080/FileServer/FileServerServlet","action=getFile&file="+file);
+			this.sendGetRequest(Const.URLFILEPROTOCOLE,"action=getFile&file="+file);
 			if (connection.getResponseCode() == 200) {
 				BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 				String line = (String) xstream.fromXML(rd);
 				_folderListener.copyfile(file,line);
 				response.getWriter().write("File "+file+" created with success!");
 			} else { //erreur lors de la récupération du contenu du fichier
-				response.sendError(405, connection.getResponseMessage());
+				response.sendError(422, connection.getResponseMessage());
 			}
 		}
 		
 		/**Get file
-		 * Renvoi le xml du fichier demandŽ
+		 * Renvoi le xml du fichier demande
 		 */
 		if( action != null && action.equals("getFile")){
 			String getFileName = request.getParameter("file");
 			File getFile = _folderListener.getFile(getFileName);
 			
 			if( getFile != null ){
-				//response.getWriter().write(xstream.toXML(getFile));
 				String data = copyFile(getFileName);
 				if (data != null){
 					response.getWriter().write(xstream.toXML(data));
 				} else {
-					response.sendError(405, "File doesn't exist on the server...");
+					response.sendError(422, "File doesn't exist on the server...");
 				}
 			}
 		}
 	}
 
+	/**
+	 * Synchronise an IP
+	 */
 	private void synchro(){
 		try{
-			this.sendGetRequest(urlAssociator,"host="+urlSelf+"&code=ETS035796");
-			//response.getWriter().write("Association");
+			this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE,"host="+Const.URLFILE+"&code=ETS035796");
 			BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-	        String line = rd.readLine();
+	        rd.readLine();
 			associated = true;
 		}
 		catch(Exception e){
@@ -139,6 +135,12 @@ public class FileServerServlet extends HttpServlet {
 		}
 	}
 	
+	/**
+	 * Uses to send Get Request
+	 * @param url
+	 * @param parametre
+	 * @return
+	 */
 	public boolean sendGetRequest(String url, String parametre){
 		try{
 			URL u = new URL(url+"?"+parametre);
@@ -161,7 +163,7 @@ public class FileServerServlet extends HttpServlet {
 	 */
 	public String copyFile (String src) {
 	    try {
-		      src = folder+"/"+src;
+		      src = _folderListener.get_folder()+"/"+src;
 	    	  String content="",ligne ;
 		      BufferedReader fichier = new BufferedReader(new FileReader(src));
 		      

@@ -37,7 +37,6 @@ public class CameraScreen extends MainScreen {
 			control.setVisible(true);
 			
 			add(cameraView);
-			//rawImage = control.getSnapshot("encoding=jpeg&width=640&height=480&quality=normal");
 			
         } catch (Exception e) {
 			e.printStackTrace();

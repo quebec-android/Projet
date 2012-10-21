@@ -35,6 +35,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 
 	static final String BOUNDARY = "-----------------V2ymHFg03ehbqqZCaJO6jy";
 
+
 	public HelloBlackBerryScreen() {
 	       setTitle("CopierColler");
 	       
@@ -119,19 +120,12 @@ public class HelloBlackBerryScreen extends MainScreen {
 	 * Send a post request to get the IP associated to a picture
 	 */
 	public void associate() {
-		//essai en get
-//		ConnectionThread ct = new ConnectionThread(me,_rawImage);
-// 	    ct.start();
-		
-		//essai en POST
-		String url = "http://localhost:8080/CodeServer/CodeServerServlet";
+		String bypass = "localhost:8080";
+		String url = "http://"+bypass+"/CodeServer/CodeServerServlet";
+		//String url = "http://"+ipSource+"/CodeServer/CodeServerServlet";
 		Hashtable params = new Hashtable();
 		
 		
-		//URLEncodedPostData postData = new URLEncodedPostData(URLEncodedPostData.DEFAULT_CHARSET, false);
-		//passing q’s value and ie’s value
-		//postData.append("image",new String(_rawImage));
-
 		ConnectionFactory conFactory = new ConnectionFactory();
 		ConnectionDescriptor conDesc = null;
 		try{
@@ -142,16 +136,14 @@ public class HelloBlackBerryScreen extends MainScreen {
 		String response = ""; // this variable used for the server response
 		// if we can get the connection descriptor from ConnectionFactory
 		if(null != conDesc){
+			HttpConnection connection;
 			try{
-				HttpMultipartRequest req = new HttpMultipartRequest(url,params,"upload_field"
-						,"codebarre.jpg", "image/jpeg", _rawImage);
+				HttpMultipartRequest req = new HttpMultipartRequest(url,params,"upload_field","codebarre.jpg", "image/jpeg", _rawImage);
 				
-				HttpConnection connection = (HttpConnection)conDesc.getConnection();
+				connection = (HttpConnection)conDesc.getConnection();
 				//set the header property
 				connection.setRequestMethod(HttpConnection.POST);
-				//connection.setRequestProperty("Content-Length", Integer.toString(postData.size())); //body content of post data
 				connection.setRequestProperty("Connection", "keep-alive"); // close the connection after success sending request and receiving response from the server
-				//connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // we set the content of this request as application/x-www-form-urlencoded, because the post data is encoded as form-urlencoded(if you print the post data string, it will be like this -> q=remoQte&ie=UTF-8).
 				connection.setRequestProperty("Content-Type", "multipart/form-data; boundary="+req.getBoundaryString());
 
 				//now it is time to write the post data into OutputStream
@@ -169,8 +161,8 @@ public class HelloBlackBerryScreen extends MainScreen {
 					while((read = in.read())!= -1)
 						buf.append((char)read);
 					response = buf.toString();
+					in.close();
 				}
-				//info.setText(response);
 				//don’t forget to close the connection
 				connection.close();
 
@@ -178,7 +170,6 @@ public class HelloBlackBerryScreen extends MainScreen {
 				System.out.println(e.toString()+":"+e.getMessage());
 			}
 		}
-		
 	}
 
 	/**
@@ -201,108 +192,61 @@ public class HelloBlackBerryScreen extends MainScreen {
 	}
 	
 	/**
-	 * 													GETTERS AND SETTERS
+	 * 							GETTERS AND SETTERS
 	 * 
 	 */
 	
-	/**
-	 * 
-	 * @return
-	 */
 	public byte[] get_rawImage() {
 		return _rawImage;
 	}
 
-	/**
-	 * 
-	 * @param _rawImage
-	 */
 	public void set_rawImage(byte[] _rawImage) {
 		this._rawImage = _rawImage;
-		myDialAlert("Photo OK");
-		//TODO simule la bonne association, à supprimer
-		//associate();
-		ipSource= " ";
-		ipDest= " ";
+		myDialAlert(""+(new String(_rawImage)).length());
+		associate();
 		updateScreen();
+		
+		//TODO supprimer ça 
+		ipSource = "";
+		ipDest = "";
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
 	public ButtonField getSourceBouton() {
 		return sourceBouton;
 	}
 
-	/**
-	 * 
-	 * @param sourceBouton
-	 */
 	public void setSourceBouton(ButtonField sourceBouton) {
 		this.sourceBouton = sourceBouton;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public ButtonField getDestBouton() {
 		return destBouton;
 	}
 
-	/**
-	 * 
-	 * @param destBouton
-	 */
 	public void setDestBouton(ButtonField destBouton) {
 		this.destBouton = destBouton;
 	}
-
-	/**
-	 * 
-	 * @return
-	 */
+	
 	public ObjectChoiceField getListFile() {
 		return listFile;
 	}
 
-	/**
-	 * 
-	 * @param listFile
-	 */
 	public void setListFile(ObjectChoiceField listFile) {
 		this.listFile = listFile;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public String getIpSource() {
 		return ipSource;
 	}
 
-	/**
-	 * 
-	 * @param ipSource
-	 */
 	public void setIpSource(String ipSource) {
 		this.ipSource = ipSource;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	public String getIpDest() {
 		return ipDest;
 	}
 
-	/**
-	 * 
-	 * @param ipDest
-	 */
 	public void setIpDest(String ipDest) {
 		this.ipDest = ipDest;
 	}

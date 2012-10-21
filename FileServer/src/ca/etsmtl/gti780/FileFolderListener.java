@@ -5,6 +5,11 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * Our implementatation of the FolderListener interface 
+ *
+ */
 public class FileFolderListener implements FolderListener {
 	private static final List<File> files = new ArrayList<File>();
 	private File _folder;
@@ -29,6 +34,11 @@ public class FileFolderListener implements FolderListener {
 		return files;
 	}
 	
+	/**
+	 * Find a file in the listened folder 
+	 * @param getFileName
+	 * @return
+	 */
 	public File getFile(String getFileName){
 		File getFile = new File(_folder.toString()+"/"+getFileName);
 		
@@ -39,14 +49,15 @@ public class FileFolderListener implements FolderListener {
 		
 		return null;
 	}
+	
 	/**
-	 * Créer un nouveau fichier ou écrase l'ancien et ajoute le contenu dans celui-ci
+	 * Creer un nouveau fichier ou ecrase l'ancien et ajoute le contenu dans celui-ci
 	 * @param newFile
 	 * @param content
 	 * @return
 	 * 
 	 * TODO
-	 * enlever le "__" qui permet de ne pas écraser le fichier existant sur le localhost
+	 * enlever le "__" qui permet de ne pas ecraser le fichier existant sur le localhost
 	 */
 	public boolean copyfile(String newFile, String content){
 		try{
@@ -58,6 +69,19 @@ public class FileFolderListener implements FolderListener {
 		catch(Exception e){
 			return false;
 		}
+	}
+
+	/**
+	 * 								GETTERS AND SETTERS
+	 */
+	
+	
+	public File get_folder() {
+		return _folder;
+	}
+
+	public void set_folder(File _folder) {
+		this._folder = _folder;
 	}
 	
 }

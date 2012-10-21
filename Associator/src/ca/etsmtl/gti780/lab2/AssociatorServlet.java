@@ -59,7 +59,7 @@ public class AssociatorServlet extends HttpServlet {
 			hosts.add(hostObj);
 		} else {
 			System.out
-					.println("Ajoutez l'adresse IP de l'hôte que vous voulez enregistrer.");
+					.println("Ajoutez l'adresse IP de l'hote que vous voulez enregistrer.");
 		}
 
 		for (int i = hosts.size() - 1; i >= 0; i--) {

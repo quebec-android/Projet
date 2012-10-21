@@ -68,12 +68,19 @@ class ConnectionThread extends Thread
 	public void run()
 	{
 		String url = "";
+		String bypass= "localhost";
+		String port = "8080";
+		String complet = bypass+":"+port;
+		String completDest = complet;
+		//String complet = screen.getIpSource();
+		//String completDest = screen.getIpDest();
+		
 		if (choix == 1) {
-			url = "http://localhost:8080/FileServer/FileServerServlet?action=getFiles";
+			url = "http://"+complet+"/FileServer/FileServerServlet?action=getFiles";
 		} else if (choix == 2) {
-			url = "http://localhost:8080/FileServer/FileServerServlet?action=copyFile&IPsource=localhost&file="+label;
+			url = "http://"+completDest+"/FileServer/FileServerServlet?action=copyFile&IPsource="+complet+"&file="+label;
 		} else {
-			url = "http://localhost:8080/CodeServer/CodeServerServlet?image="+new String(img);
+			url = "http://"+complet+"/CodeServer/CodeServerServlet?image="+new String(img);
 		}
 		ConnectionFactory connFact = new ConnectionFactory();
 		ConnectionDescriptor connDesc;
@@ -89,8 +96,9 @@ class ConnectionThread extends Thread
 				{
 					public void run()
 					{
-						if(iResponseCode==200){
-							try {
+						String response = "";
+						try {
+							if(iResponseCode==200){
 								if (choix==1) {
 									Document doc;
 									DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -110,8 +118,6 @@ class ConnectionThread extends Thread
 									screen.createListFile(choices);
 									
 								} else { //affichage simple de la réponse
-									String response = "";
-
 									InputStream is = httpConn.openInputStream();
 									ByteArrayOutputStream bytestream = new ByteArrayOutputStream();
 									int ch;
@@ -120,27 +126,23 @@ class ConnectionThread extends Thread
 									}
 									response = new String(bytestream.toByteArray());
 									bytestream.close();
-									if (choix == 2) {
-										screen.finish(response);
-									}
 								}
-							   
-							} catch (Exception e) {
-								screen.myDialAlert("exception : "+e.getMessage());
+							} else {
+								response = "Server error code "+httpConn.getResponseCode()+" : "+httpConn.getResponseMessage();
+							} 
+							httpConn.close();
+							if (choix == 2) {
+								screen.finish(response);
 							}
-						} else {
-							try {
-								screen.myDialAlert("Server error code "+httpConn.getResponseCode()+" : "+httpConn.getResponseMessage());
-							} catch (Exception e) {
-								screen.myDialAlert("exception : "+e.getMessage());
-							}
+						} catch (Exception e) {
+							screen.myDialAlert("Exception : "+e.getMessage());
 						}
 					}
 				});
 			} 
 			catch (Exception e) 
 			{
-				System.err.println("Caught an IOException: " + e.getMessage());
+				System.err.println("Caught an Exception: " + e.getMessage());
 			}
 		}
 	}

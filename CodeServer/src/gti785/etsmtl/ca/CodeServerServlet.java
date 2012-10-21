@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
@@ -37,8 +39,11 @@ import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
+import common.Const;
+
 /**
  * Servlet implementation class CodeServerServlet
+ * 
  */
 public class CodeServerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -52,6 +57,9 @@ public class CodeServerServlet extends HttpServlet {
 	static final Map<DecodeHintType,Object> HINTS_PURE;
 	private static final long MAX_IMAGE_SIZE = 2000000L;
 	
+	/**
+	 * Configure the decoder
+	 */
 	static {
 	    HINTS = new EnumMap<DecodeHintType,Object>(DecodeHintType.class);
 	    HINTS.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
@@ -60,7 +68,9 @@ public class CodeServerServlet extends HttpServlet {
 	    HINTS_PURE.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
 	  }
 	
-	// Configuration de XStream
+	/**
+	 * Configure XStream
+	 */
 	static {
 		xstream.setMode(XStream.NO_REFERENCES);
 		xstream.alias("Host", Host.class);
@@ -70,9 +80,10 @@ public class CodeServerServlet extends HttpServlet {
 	}
 	
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * Overriding doGet method
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		
 		String strImg = request.getParameter("image");
 		System.out.println("doGet "+strImg);
 		
@@ -93,8 +104,7 @@ public class CodeServerServlet extends HttpServlet {
 				// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
 			}
 			else{
-				String url = "http://localhost:8080/Associator/AssociatorServlet";
-				if( this.sendGetRequest(url, "") ){
+				if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
 					//read the result from the server
 			        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			        String line = rd.readLine();
@@ -124,8 +134,7 @@ public class CodeServerServlet extends HttpServlet {
 	}
 	
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request,
-	 *      HttpServletResponse response)
+	 * Overriding doPost method
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException {
 		System.out.println("doPost");
@@ -137,6 +146,10 @@ public class CodeServerServlet extends HttpServlet {
 	    	List<FileItem> fi = (List<FileItem>) upload.parseRequest(request);
 		    for (FileItem item : fi) {
 				InputStream is = item.getInputStream();
+				StringWriter writer = new StringWriter();
+				IOUtils.copy(is, writer);
+				String theString = writer.toString();
+
 				this.processImage(is, request, response);
 		    }
 	    }
@@ -146,6 +159,14 @@ public class CodeServerServlet extends HttpServlet {
 		
 	}
 	
+	/**
+	 * Decode the image of the barre code to return the associated code
+	 * @param is
+	 * @param request
+	 * @param response
+	 * @throws ServletException
+	 * @throws IOException
+	 */
 	public void processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException{
 		System.out.println("processImage");
 		BufferedImage image;
@@ -160,7 +181,7 @@ public class CodeServerServlet extends HttpServlet {
 	    try{
 	    	Result theResult = reader.decode(bitmap, HINTS);
 	    	code = theResult.toString();
-	    }
+	    } 
 	    catch(Exception e){
 	    	System.out.println("Error");
 	    }
@@ -181,8 +202,7 @@ public class CodeServerServlet extends HttpServlet {
 				// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
 			}
 			else{
-				String url = "http://localhost:8080/Associator/AssociatorServlet";
-				if( this.sendGetRequest(url, "") ){
+				if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
 					//read the result from the server
 			        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			        String line = rd.readLine();
@@ -214,6 +234,12 @@ public class CodeServerServlet extends HttpServlet {
 		}
 	}
 	
+	/**
+	 * Send a Get Request
+	 * @param url
+	 * @param parametre
+	 * @return
+	 */
 	public boolean sendGetRequest(String url, String parametre){
 		try{
 			URL u = new URL(url+"?"+parametre);
@@ -227,6 +253,11 @@ public class CodeServerServlet extends HttpServlet {
 		}
 	}
 	
+	/**
+	 * Retrieve a code in the host list
+	 * @param code
+	 * @return
+	 */
 	public String checkHostList(String code){
 		for(Host host: hosts){
 			if(host.getCode().equals(code)){
@@ -236,6 +267,10 @@ public class CodeServerServlet extends HttpServlet {
 		return null;
 	}
 	
+	/**
+	 * Add new hosts in the list
+	 * @param activeHosts
+	 */
 	public void addNewHosts( List<Host> activeHosts){
 		for(Host host: activeHosts){
 			if( !hosts.contains(host) ){
