@@ -6,16 +6,25 @@ import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.ObjectChoiceField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.xml.parsers.DocumentBuilder;
+import net.rim.device.api.xml.parsers.DocumentBuilderFactory;
 
 /**
  * MainClass
@@ -45,7 +54,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 	       add(sourceBouton);
 	       sourceBouton.setChangeListener(new FieldChangeListener() {
 	    	   public void fieldChanged(Field field, int context) {
-	    		   launchCameraScreen();
+	    		   launchCameraScreen(1);
 	    	   }
 	       });
     	   
@@ -53,7 +62,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 	       add(destBouton);
 	       destBouton.setChangeListener(new FieldChangeListener() {
 	    	   public void fieldChanged(Field field, int context) {
-	    		   launchCameraScreen();
+	    		   launchCameraScreen(2);
 	    	   }
 	       });
 	       
@@ -112,19 +121,24 @@ public class HelloBlackBerryScreen extends MainScreen {
 	    listFile.setPadding(listFile.getPaddingTop(), listFile.getPaddingRight(), listFile.getPaddingBottom(), -170);
 	}
 	
-	protected void launchCameraScreen() {
-		CameraScreen screen = new CameraScreen(this);
+	/**
+	 * Launch Camera Screen 
+	 * 
+	 * @param source : indicates if tracking the IP source or the IP destination
+	 */
+	protected void launchCameraScreen(int source) {
+		CameraScreen screen = new CameraScreen(this, source);
 	}
 
 	/**
 	 * Send a post request to get the IP associated to a picture
+	 * @param source
 	 */
-	public void associate() {
+	public void associate(int source) {
 		String bypass = "localhost:8080";
 		String url = "http://"+bypass+"/CodeServer/CodeServerServlet";
 		//String url = "http://"+ipSource+"/CodeServer/CodeServerServlet";
 		Hashtable params = new Hashtable();
-		
 		
 		ConnectionFactory conFactory = new ConnectionFactory();
 		ConnectionDescriptor conDesc = null;
@@ -133,14 +147,14 @@ public class HelloBlackBerryScreen extends MainScreen {
 		}catch(Exception e){
 			System.out.println(e.toString()+":"+e.getMessage());
 		}
-		String response = ""; // this variable used for the server response
-		// if we can get the connection descriptor from ConnectionFactory
+
 		if(null != conDesc){
 			HttpConnection connection;
 			try{
 				HttpMultipartRequest req = new HttpMultipartRequest(url,params,"upload_field","codebarre.jpg", "image/jpeg", _rawImage);
 				
 				connection = (HttpConnection)conDesc.getConnection();
+				
 				//set the header property
 				connection.setRequestMethod(HttpConnection.POST);
 				connection.setRequestProperty("Connection", "keep-alive"); // close the connection after success sending request and receiving response from the server
@@ -152,22 +166,38 @@ public class HelloBlackBerryScreen extends MainScreen {
 				out.flush();
 				out.close();
 
-				int responseCode = connection.getResponseCode(); //when this code is called, the post data request will be send to server, and after that we can read the response from the server if the response code is 200 (HTTP OK).
-				if(responseCode == HttpConnection.HTTP_OK){
-					//read the response from the server, if the response is ascii character, you can use this following code, otherwise, you must use array of byte instead of String
-					InputStream in = connection.openInputStream();
-					StringBuffer buf = new StringBuffer();
-					int read = -1;
-					while((read = in.read())!= -1)
-						buf.append((char)read);
-					response = buf.toString();
-					in.close();
+				int responseCode = connection.getResponseCode(); 
+				if(responseCode == HttpConnection.HTTP_OK){	
+					//parser le XML pour trouver l'IP
+					Document doc;
+					DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+					DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+					docBuilder.isValidating();
+					doc = docBuilder.parse(connection.openInputStream());
+					doc.getDocumentElement().normalize();
+					
+					NodeList list = doc.getElementsByTagName("ip");
+					if (list.getLength() == 1) {
+						Element element1 = (Element) list.item(0);
+						NodeList fstNm = element1.getChildNodes();
+						if (source == 1) {
+							ipSource = (fstNm.item(0)).getNodeValue();
+							myDialAlert("IP source = "+ipSource);
+						} else {
+							ipDest = (fstNm.item(0)).getNodeValue();
+							myDialAlert("IP destination = "+ipDest);
+						}
+					} else {
+						myDialAlert("Error while sending the picture.");
+					}
+				} else {
+					myDialAlert("Server error code "+responseCode+" : "+connection.getResponseMessage());
 				}
 				//don’t forget to close the connection
 				connection.close();
 
 			}catch(Exception e){
-				System.out.println(e.toString()+":"+e.getMessage());
+				myDialAlert("Error while sending the picture.");
 			}
 		}
 	}
@@ -188,6 +218,7 @@ public class HelloBlackBerryScreen extends MainScreen {
     			
     		});
     	} catch (Exception e) {
+    		//do nothing
     	}
 	}
 	
@@ -200,15 +231,10 @@ public class HelloBlackBerryScreen extends MainScreen {
 		return _rawImage;
 	}
 
-	public void set_rawImage(byte[] _rawImage) {
+	public void set_rawImage(final byte[] _rawImage, int source) {
 		this._rawImage = _rawImage;
-		myDialAlert(""+(new String(_rawImage)).length());
-		associate();
+		associate(source);
 		updateScreen();
-		
-		//TODO supprimer ça 
-		ipSource = "";
-		ipDest = "";
 	}
 	
 	public ButtonField getSourceBouton() {

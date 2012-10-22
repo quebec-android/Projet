@@ -24,8 +24,7 @@ public class AssociatorServlet extends HttpServlet {
 
 	private static final List<Host> hosts = new ArrayList<Host>();
 
-	private static final XStream xstream = new XStream(
-			new JettisonMappedXmlDriver());
+	private static final XStream xstream = new XStream(new JettisonMappedXmlDriver());
 
 	// Configuration de XStream
 	static {
@@ -46,9 +45,7 @@ public class AssociatorServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request,
 	 *      HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String host = request.getParameter("host");
 		final String code = request.getParameter("code");
 
@@ -76,9 +73,7 @@ public class AssociatorServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request,
 	 *      HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
 

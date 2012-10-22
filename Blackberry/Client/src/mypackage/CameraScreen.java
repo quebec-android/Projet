@@ -18,18 +18,21 @@ public class CameraScreen extends MainScreen {
 	VideoControl control;
 	RichTextField textField;
 	HelloBlackBerryScreen screen;
+	int source;
 	
 	/**
 	 * Push the CameraScreen
 	 * Configure the camera
 	 * @param screen
 	 */
-	public CameraScreen(HelloBlackBerryScreen screen){
+	public CameraScreen(HelloBlackBerryScreen screen, int source){
 		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
 		UiApplication.getUiApplication().pushScreen(this);
 		this.screen = screen;
+		this.source=source;
+		
         try {
-			Player player = Manager.createPlayer("capture://video?encoding=jpeg");
+        	Player player = Manager.createPlayer("capture://video?encoding=jpeg&width=1024&height=768&quality=normal");
 			player.start();
 			control = (VideoControl)player.getControl("VideoControl");
 			Field cameraView = (Field)control.initDisplayMode(VideoControl.USE_GUI_PRIMITIVE,"net.rim.device.api.ui.Field");
@@ -57,13 +60,13 @@ public class CameraScreen extends MainScreen {
 	        {   
 	            try
 	            {                      
-	                byte[] rawImage = control.getSnapshot(null);
+	                byte[] rawImage = control.getSnapshot("capture://video?encoding=jpeg&width=1024&height=768&quality=normal");
 	                
 	                UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());			
 	                if (rawImage == null) {
 	                	 screen.myDialAlert("Erreur lors de la prise de photo. Veuillez recommencer.");
 	                } else {
-	                	screen.set_rawImage(rawImage);
+	                	screen.set_rawImage(rawImage, source);
 	                }
 	                UiApplication.getUiApplication().pushScreen(screen);
 	            }

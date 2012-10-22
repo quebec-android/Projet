@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -25,20 +24,21 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
+import com.google.zxing.ChecksumException;
 import com.google.zxing.DecodeHintType;
+import com.google.zxing.FormatException;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
 import com.google.zxing.Reader;
 import com.google.zxing.Result;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-
 import common.Const;
 
 /**
@@ -83,16 +83,13 @@ public class CodeServerServlet extends HttpServlet {
 	 * Overriding doGet method
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
 		response.getWriter().write("Code server online");
-		
 	}
 	
 	/**
 	 * Overriding doPost method
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)	throws ServletException, IOException {
-		System.out.println("doPost");
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		DiskFileItemFactory  fileItemFactory = new DiskFileItemFactory ();
 		ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
 	    upload.setFileSizeMax(MAX_IMAGE_SIZE);
@@ -101,62 +98,40 @@ public class CodeServerServlet extends HttpServlet {
 	    	List<FileItem> fi = (List<FileItem>) upload.parseRequest(request);
 		    for (FileItem item : fi) {
 				InputStream is = item.getInputStream();
-				StringWriter writer = new StringWriter();
-				IOUtils.copy(is, writer);
-				String theString = writer.toString();
-
 				String code = this.processImage(is, request, response);
-				
+				is.close();
 				if ( code != null ) {
-					
-					String IP = null;
-					
-					/**TODO
-					 * utilise api pour avoir le code
-					 */
-					
-					if( (IP = this.checkHostList(code)) != null ){
-						/** TODO
-						 * Envoyer rŽponse au portable
-						 */
-						
-						// out.println("<data><ip>"+"192.168.0.1   ......    image="+strImg+"</ip></data>");
+					String IP  = this.checkHostList(code);
+					if( IP != null ){ // ASSOCIATION OK
+						response.getWriter().write("<ip>"+IP+"</ip>");
 					}
-					else{
+					else{ //IP pas connu, on l'ajoute dans la table des hotes
 						if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
 							//read the result from the server
 					        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 					        String line = rd.readLine();
+					        rd.close();
 					        List<Host> activeHost = (List<Host>) xstream.fromXML(line);
 					        this.addNewHosts(activeHost);
 						}
-						if( (IP = this.checkHostList(code)) != null ){
-							/**TODO
-							 * send request to IP fileServer to get files
-							 */
+						
+						//on retente après l'ajout
+						IP = this.checkHostList(code);
+						if( IP != null ){
+							response.getWriter().write("<ip>"+IP+"</ip>");
+						} else{
+							response.sendError(510, "This barre code is not associated to any IP.");
 						}
-						else{
-							response.getWriter().write("IP not found");
-							//out.println("<data><ip>-1</ip></data>");
-						}
 					}
-					
-					if( IP != null ){
-						String answer = "<?xml version=\"1.0\"?>";
-				        answer += "<data><ip>"+IP+"</ip></data>";
-				        
-				        response.getWriter().write(answer);
-					}
-					else{
-						response.getWriter().write("failed"+code);
-					}
+				} else {//probleme code == null
+					response.sendError(511, "Server error while associating the barre code.");
 				}
 		    }
+	    } catch (NotFoundException e) {
+	    	response.sendError(512, "No barre code was found on the picture.");
+	    } catch(Exception e){
+	    	response.sendError(511, "Server error while associating the barre code.");
 	    }
-	    catch(Exception e){
-	    	
-	    }
-		
 	}
 	
 	/**
@@ -164,27 +139,26 @@ public class CodeServerServlet extends HttpServlet {
 	 * @param is
 	 * @param request
 	 * @param response
+	 * @return associated code
 	 * @throws ServletException
 	 * @throws IOException
+	 * @throws FormatException 
+	 * @throws ChecksumException 
+	 * @throws NotFoundException 
 	 */
-	public String processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException{
-		System.out.println("processImage");
+	public String processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException, NotFoundException, ChecksumException, FormatException{
 		BufferedImage image;
 		
 		image = ImageIO.read(is);
-	
 	 	Reader reader = new MultiFormatReader();
 	    LuminanceSource source = new BufferedImageLuminanceSource(image);
 	    BinaryBitmap bitmap = new BinaryBitmap(new GlobalHistogramBinarizer(source));
 	    String code = null;
 	    
-	    try{
-	    	Result theResult = reader.decode(bitmap, HINTS);
-	    	code = theResult.toString();
-	    } 
-	    catch(Exception e){
-	    	System.out.println("Error");
-	    }
+    	Result theResult = reader.decode(bitmap, HINTS);
+    	code = theResult.toString();
+    	System.out.println(code);
+		is.close();
 		
 		return code;
 	}
