@@ -1,23 +1,15 @@
 package mypackage;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
-import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.ObjectChoiceField;
@@ -25,6 +17,10 @@ import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.xml.parsers.DocumentBuilder;
 import net.rim.device.api.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * MainClass
@@ -234,6 +230,8 @@ public class HelloBlackBerryScreen extends MainScreen {
 	public void set_rawImage(final byte[] _rawImage, int source) {
 		this._rawImage = _rawImage;
 		associate(source);
+		ipSource = "";
+		ipDest = "";
 		updateScreen();
 	}
 	

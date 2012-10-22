@@ -1,7 +1,8 @@
 package ca.etsmtl.gti780;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,12 +60,18 @@ public class FileFolderListener implements FolderListener {
 	 * TODO
 	 * enlever le "__" qui permet de ne pas ecraser le fichier existant sur le localhost
 	 */
-	public boolean copyfile(String newFile, String content){
+	public boolean copyfile(String newFile, InputStream content){
 		try{
-			FileWriter fw = new FileWriter(_folder.toString()+"/__"+newFile);
-			fw.write(content);
-			fw.close();
-			return true;
+			
+	        FileOutputStream fos = new FileOutputStream(new File(_folder.toString()+"/__"+newFile));
+
+	        byte[] buffer = new byte[4096];
+	        int length; 
+	        while((length = content.read(buffer)) > 0) {
+	            fos.write(buffer, 0, length);
+	        }
+	        fos.close();
+	        return true;
 		}
 		catch(Exception e){
 			return false;

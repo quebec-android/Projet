@@ -1,16 +1,20 @@
 package ca.etsmtl.gti780;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -93,9 +97,8 @@ public class FileServerServlet extends HttpServlet {
 			
 			this.sendGetRequest(Const.URLFILEPROTOCOLE,"action=getFile&file="+file);
 			if (connection.getResponseCode() == 200) {
-				BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-				String line = (String) xstream.fromXML(rd);
-				_folderListener.copyfile(file,line);
+				InputStream content = connection.getInputStream();
+				_folderListener.copyfile(file,content);
 				response.getWriter().write("File "+file+" created with success!");
 			} else { //erreur lors de la récupération du contenu du fichier
 				response.sendError(422, connection.getResponseMessage());
@@ -110,12 +113,25 @@ public class FileServerServlet extends HttpServlet {
 			File getFile = _folderListener.getFile(getFileName);
 			
 			if( getFile != null ){
-				String data = copyFile(getFileName);
-				if (data != null){
-					response.getWriter().write(xstream.toXML(data));
-				} else {
-					response.sendError(422, "File doesn't exist on the server...");
-				}
+				
+			    ServletOutputStream out = response.getOutputStream();
+			    ServletContext context = getServletConfig().getServletContext();
+			    String mimetype = context.getMimeType(getFileName);
+
+			    response.setContentType((mimetype != null) ? mimetype : "application/octet-stream");
+			    response.setContentLength((int)getFile.length());
+
+			    FileInputStream in = new FileInputStream(getFile);
+			    byte[] buffer = new byte[4096];
+
+			    int length;
+			    while((length = in.read(buffer)) > 0) {
+			        out.write(buffer, 0, length);
+			    }
+			    in.close();
+			    out.flush();
+			}else {
+				response.sendError(422, "File doesn't exist on the server...");
 			}
 		}
 	}
@@ -155,28 +171,32 @@ public class FileServerServlet extends HttpServlet {
 	}
 	
 	/**
-	 * Fonction qui copie le contenu du fichier en String
+	 * Fonction qui copie le contenu du fichier dans un tableau d'octet
 	 * On rajoute au nom du fichier le nom du dossier surveille par le WatchDog
 	 * @param src
 	 * @return
 	 * @throws IOException
 	 */
-	public String copyFile (String src) {
-	    try {
-		      src = _folderListener.get_folder()+"/"+src;
-	    	  String content="",ligne ;
-		      BufferedReader fichier = new BufferedReader(new FileReader(src));
-		      
-		      while ((ligne = fichier.readLine()) != null) {
-		          content+=ligne;
-		          content+="\n";
-		      }
-	
-		      fichier.close();
-		      return content;
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	    }  
-		return null;
+	public byte[] copyFile (String src) {
+		try {
+			src = _folderListener.get_folder()+"/"+src;
+			FileInputStream fin=new FileInputStream(src);
+			byte readBuf[] = new byte[512*1024];
+
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+			int readCnt = fin.read(readBuf);
+			while (0 < readCnt) {
+				bout.write(readBuf, 0, readCnt);
+				readCnt = fin.read(readBuf);
+			}
+
+			fin.close();
+
+			return bout.toByteArray();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}  
 	}
 }
