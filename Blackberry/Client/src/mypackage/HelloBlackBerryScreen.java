@@ -7,9 +7,14 @@ import javax.microedition.io.HttpConnection;
 
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
+import net.rim.device.api.system.Application;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.ObjectChoiceField;
@@ -78,11 +83,13 @@ public class HelloBlackBerryScreen extends MainScreen {
 	/**
 	 * Display the last message before closing the app
 	 * @param msg
+	 * @throws InterruptedException 
 	 */
-	protected void finish(String msg) {
+	protected void finish(String msg) throws InterruptedException {
 		this.deleteAll();
 		RichTextField text = new RichTextField(msg);
 		add(text);
+		myFinalAlert(msg);
 	}
 	
 	/**
@@ -110,6 +117,8 @@ public class HelloBlackBerryScreen extends MainScreen {
 	        		if (this.getSelectedIndex()!=0) {
 	        			ConnectionThread ct = new ConnectionThread(me,this.getChoice(this.getSelectedIndex()).toString());
 	        			ct.start();
+	        			//put the app in background
+	        			UiApplication.getUiApplication().requestBackground();
 	        		}
 	            }
 	    };
@@ -131,7 +140,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 	 * @param source
 	 */
 	public void associate(int source) {
-		String bypass = "localhost:8080";
+		String bypass = "192.168.1.205:8080";
 		String url = "http://"+bypass+"/CodeServer/CodeServerServlet";
 		//String url = "http://"+ipSource+"/CodeServer/CodeServerServlet";
 		Hashtable params = new Hashtable();
@@ -141,7 +150,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 		try{
 			conDesc = conFactory.getConnection(url);
 		}catch(Exception e){
-			System.out.println(e.toString()+":"+e.getMessage());
+			myDialAlert("Error while connecting the server.");
 		}
 
 		if(null != conDesc){
@@ -187,7 +196,7 @@ public class HelloBlackBerryScreen extends MainScreen {
 						myDialAlert("Error while sending the picture.");
 					}
 				} else {
-					myDialAlert("Server error code "+responseCode+" : "+connection.getResponseMessage());
+					myDialAlert("Server error : "+connection.getResponseMessage());
 				}
 				//don’t forget to close the connection
 				connection.close();
@@ -218,6 +227,16 @@ public class HelloBlackBerryScreen extends MainScreen {
     	}
 	}
 	
+	public void myFinalAlert(final String msg){
+		Dialog dialog = new Dialog( Dialog.OK, msg, Dialog.OK, Bitmap.getPredefinedBitmap(Bitmap.INFORMATION), Manager.VERTICAL_SCROLL);
+	    synchronized(Application.getEventLock())
+	    {
+	        Ui.getUiEngine().pushGlobalScreen(dialog, 1, UiEngine.GLOBAL_QUEUE);
+	    }
+	}
+	
+
+	
 	/**
 	 * 							GETTERS AND SETTERS
 	 * 
@@ -230,8 +249,6 @@ public class HelloBlackBerryScreen extends MainScreen {
 	public void set_rawImage(final byte[] _rawImage, int source) {
 		this._rawImage = _rawImage;
 		associate(source);
-		ipSource = "";
-		ipDest = "";
 		updateScreen();
 	}
 	

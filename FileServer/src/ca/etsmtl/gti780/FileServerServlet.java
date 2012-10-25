@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -42,15 +41,12 @@ public class FileServerServlet extends HttpServlet {
      */
     static {
 		xstream.setMode(XStream.NO_REFERENCES);
-		xstream.alias("File", File.class);
 	}
     
     /**
      * Overriding init method
      */
     public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        
         if (!folder.exists()) {
         	try{
 	        	folder.mkdir();
@@ -82,9 +78,13 @@ public class FileServerServlet extends HttpServlet {
 		/**GetFiles
 		 * Retourne les fichiers du dossier surveille
 		 */
-		if( action != null && action.equals("getFiles")){
+		if( action != null && action.equals("getFileListing")){
 			List<File> files = _folderListener.getFiles();
-			response.getWriter().write(xstream.toXML(files));
+			response.getWriter().write("<data><success>1</success><files>");
+			for (File f: files){
+				response.getWriter().write("<file>"+f.getName()+"</file>");
+			}
+			response.getWriter().write("</files></data>");
 		}
 		
 		/**Copy file
@@ -115,10 +115,6 @@ public class FileServerServlet extends HttpServlet {
 			if( getFile != null ){
 				
 			    ServletOutputStream out = response.getOutputStream();
-			    ServletContext context = getServletConfig().getServletContext();
-			    String mimetype = context.getMimeType(getFileName);
-
-			    response.setContentType((mimetype != null) ? mimetype : "application/octet-stream");
 			    response.setContentLength((int)getFile.length());
 
 			    FileInputStream in = new FileInputStream(getFile);

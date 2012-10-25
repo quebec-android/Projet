@@ -10,9 +10,9 @@ public class Const {
 	/**
 	 * HOST
 	 */
-	public static String HOSTCODE = "localhost:8080";
-	public static String HOSTFILE = "localhost:8080";
-	public static String HOSTASSOCIATOR = "localhost:8080";
+	public static String HOSTCODE = "192.168.1.205:8080";
+	public static String HOSTFILE = "192.168.1.205:8080";
+	public static String HOSTASSOCIATOR = "192.168.1.205:8080";
 	
 	
 	/**

@@ -12,7 +12,7 @@ import java.util.List;
  *
  */
 public class FileFolderListener implements FolderListener {
-	private static final List<File> files = new ArrayList<File>();
+	private static List<File> files = new ArrayList<File>();
 	private File _folder;
 	
 	public FileFolderListener(File folder){
@@ -24,10 +24,9 @@ public class FileFolderListener implements FolderListener {
 	
 	@Override
 	public void folderHasChanged() {
+		files = new ArrayList<File>();
 		for(File file: _folder.listFiles()){
-			if(!files.contains(file)){
-				files.add(file);
-			}
+			files.add(file);
 		}
 	}
 	

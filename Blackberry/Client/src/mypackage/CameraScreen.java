@@ -32,17 +32,16 @@ public class CameraScreen extends MainScreen {
 		this.source=source;
 		
         try {
-        	Player player = Manager.createPlayer("capture://video?encoding=jpeg&width=1024&height=768&quality=normal");
+        	Player player = Manager.createPlayer("capture://video?encoding=jpeg&width=350&height=350&quality=normal");
 			player.start();
 			control = (VideoControl)player.getControl("VideoControl");
 			Field cameraView = (Field)control.initDisplayMode(VideoControl.USE_GUI_PRIMITIVE,"net.rim.device.api.ui.Field");
-			control.setDisplayFullScreen(true);
 			control.setVisible(true);
 			
 			add(cameraView);
 			
         } catch (Exception e) {
-			e.printStackTrace();
+        	screen.myDialAlert("Error while launching the camera.");
 		}
         
 	}
@@ -60,7 +59,7 @@ public class CameraScreen extends MainScreen {
 	        {   
 	            try
 	            {                      
-	                byte[] rawImage = control.getSnapshot("capture://video?encoding=jpeg&width=1024&height=768&quality=normal");
+	                byte[] rawImage = control.getSnapshot("capture://video?encoding=jpeg&width=350&height=350&quality=normal");
 	                
 	                UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());			
 	                if (rawImage == null) {

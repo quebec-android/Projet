@@ -3,9 +3,11 @@ package gti785.etsmtl.ca;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,7 +41,6 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-import common.Const;
 
 /**
  * Servlet implementation class CodeServerServlet
@@ -48,6 +49,7 @@ import common.Const;
 public class CodeServerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private HttpURLConnection connection;
+	private String url = "http://192.168.1.205:8080/Associator/AssociatorServlet";
     
     private static final List<Host> hosts = new ArrayList<Host>();
 
@@ -99,14 +101,15 @@ public class CodeServerServlet extends HttpServlet {
 		    for (FileItem item : fi) {
 				InputStream is = item.getInputStream();
 				String code = this.processImage(is, request, response);
+				//String code = "ETS035796";
 				is.close();
 				if ( code != null ) {
 					String IP  = this.checkHostList(code);
 					if( IP != null ){ // ASSOCIATION OK
-						response.getWriter().write("<ip>"+IP+"</ip>");
+						response.getWriter().write("<data><ip>"+IP+"</ip></data>");
 					}
 					else{ //IP pas connu, on l'ajoute dans la table des hotes
-						if( this.sendGetRequest(Const.URLASSOCIATEDPROTOCOLE, "") ){
+						if( this.sendGetRequest(url, null) ){
 							//read the result from the server
 					        BufferedReader rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 					        String line = rd.readLine();
@@ -118,7 +121,7 @@ public class CodeServerServlet extends HttpServlet {
 						//on retente après l'ajout
 						IP = this.checkHostList(code);
 						if( IP != null ){
-							response.getWriter().write("<ip>"+IP+"</ip>");
+							response.getWriter().write("<data><ip>"+IP+"</ip></data>");
 						} else{
 							response.sendError(510, "This barre code is not associated to any IP.");
 						}
@@ -149,6 +152,19 @@ public class CodeServerServlet extends HttpServlet {
 	public String processImage (InputStream is, ServletRequest request, HttpServletResponse response)	throws ServletException, IOException, NotFoundException, ChecksumException, FormatException{
 		BufferedImage image;
 		
+//		OutputStream os = new FileOutputStream("image.jpg");
+//
+//		byte[] b = new byte[2048];
+//		int length;
+//
+//		while ((length = is.read(b)) != -1) {
+//			os.write(b, 0, length);
+//		}
+//
+//		is.close();
+//		os.close();
+		
+		
 		image = ImageIO.read(is);
 	 	Reader reader = new MultiFormatReader();
 	    LuminanceSource source = new BufferedImageLuminanceSource(image);
@@ -171,7 +187,12 @@ public class CodeServerServlet extends HttpServlet {
 	 */
 	public boolean sendGetRequest(String url, String parametre){
 		try{
-			URL u = new URL(url+"?"+parametre);
+			URL u;
+			if (parametre!=null) {
+				u = new URL(url+"?"+parametre);
+			} else {
+				u = new URL(url);
+			}
 			connection = (HttpURLConnection) u.openConnection();
 			connection.setRequestMethod("GET");
 			connection.connect();

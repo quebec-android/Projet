@@ -68,19 +68,21 @@ class ConnectionThread extends Thread
 	public void run()
 	{
 		String url = "";
-		String bypass= "localhost";
+		String bypass= "192.168.1.205";
 		String port = "8080";
 		String complet = bypass+":"+port;
-		String completDest = complet;
 		//String complet = screen.getIpSource();
+		String completDest = complet;
 		//String completDest = screen.getIpDest();
 		
 		if (choix == 1) {
-			url = "http://"+complet+"/FileServer/FileServerServlet?action=getFiles";
+			url = "http://"+complet+"/FileServer/FileServerServlet?action=getFileListing";
+			//url = "http://"+complet+"?action=getFileListing";
 		} else if (choix == 2) {
 			url = "http://"+completDest+"/FileServer/FileServerServlet?action=copyFile&IPsource="+complet+"&file="+label;
+			//url = "http://"+complet+"?action=copyFile&IPsource="+complet+"&file="+label;
 		} else {
-			url = "http://"+complet+"/CodeServer/CodeServerServlet?image="+new String(img);
+			url = "http://192.168.1.205:8080/CodeServer/CodeServerServlet?image="+new String(img);
 		}
 		ConnectionFactory connFact = new ConnectionFactory();
 		ConnectionDescriptor connDesc;
@@ -107,13 +109,13 @@ class ConnectionThread extends Thread
 									doc = docBuilder.parse(httpConn.openInputStream());
 									doc.getDocumentElement().normalize();
 									
-									NodeList list = doc.getElementsByTagName("File");
+									NodeList list = doc.getElementsByTagName("file");
 									String choices[] = new String[list.getLength()+1];
 									choices[0] = "Choix du fichier";
 									for (int i=0; i<list.getLength();i++){
 										Element element1 = (Element) list.item(i);
 										NodeList fstNm = element1.getChildNodes();
-										choices[i+1] = (fstNm.item(0)).getNodeValue().substring((fstNm.item(0)).getNodeValue().indexOf("\\")+1,(fstNm.item(0)).getNodeValue().length());
+										choices[i+1] = (fstNm.item(0)).getNodeValue();
 									}
 									screen.createListFile(choices);
 									
@@ -128,7 +130,7 @@ class ConnectionThread extends Thread
 									bytestream.close();
 								}
 							} else {
-								response = "Server error code "+httpConn.getResponseCode()+" : "+httpConn.getResponseMessage();
+								response = "Server error : "+httpConn.getResponseMessage();
 							} 
 							httpConn.close();
 							if (choix == 2) {
@@ -142,7 +144,7 @@ class ConnectionThread extends Thread
 			} 
 			catch (Exception e) 
 			{
-				System.err.println("Caught an Exception: " + e.getMessage());
+				screen.myDialAlert("Caught an Exception: " + e.getMessage());
 			}
 		}
 	}
